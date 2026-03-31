@@ -1,6 +1,7 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
+import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 
@@ -23,7 +24,7 @@ export class YoutubeRssProcessor {
             .map(entryEl => this._createYoutubeVideoData(entryEl))
     }
 
-    private _createYoutubeVideoData(entryEl: GoogleAppsScript.XML_Service.Element) : IYoutubeVideoData {
+    private _createYoutubeVideoData(entryEl: XmlElement) : IYoutubeVideoData {
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             url: this._rssFeedParser.getLinkFromElement(entryEl),

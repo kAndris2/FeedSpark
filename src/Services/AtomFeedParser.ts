@@ -1,3 +1,4 @@
+import { XmlElement } from "../Models/XmlElement";
 import { RssFeedParserBase } from "./RssFeedParserBase";
 
 export class AtomFeedParser extends RssFeedParserBase {
@@ -5,8 +6,8 @@ export class AtomFeedParser extends RssFeedParserBase {
         super("http://www.w3.org/2005/Atom");
     }
 
-    public override getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element): string {
-        const url = this.getValueFormChildEl(baseElement, "link", "href");
+    public override getLinkFromElement(baseElement: XmlElement): string {
+        const url = baseElement.getValueFormChildEl("link", "href");
 
         if (!url) {
             throw new Error("The url can not be empty!");
@@ -15,8 +16,8 @@ export class AtomFeedParser extends RssFeedParserBase {
         return url;
     }
 
-    public override getDateFromElement(baseElement: GoogleAppsScript.XML_Service.Element): Date {
-        const dateStr = this.getTextFromChildEl(baseElement, "published");
+    public override getDateFromElement(baseElement: XmlElement): Date {
+        const dateStr = baseElement.getTextFromChildEl("published");
 
         if (!dateStr) {
             throw new Error("The date can not be empty!");
@@ -25,7 +26,7 @@ export class AtomFeedParser extends RssFeedParserBase {
         return new Date(dateStr);
     }
 
-    collectElements(root: GoogleAppsScript.XML_Service.Element): GoogleAppsScript.XML_Service.Element[] {
-        return root.getChildren("entry", this.namespace);
+    collectElements(root: XmlElement): XmlElement[] {
+        return root.getChildren("entry");
     }
 }

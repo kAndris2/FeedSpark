@@ -1,8 +1,10 @@
+import { XmlElement } from "../Models/XmlElement";
+
 export interface IRssFeedParser {
-    getAllRootElementsParallel(feedUrls: string[]) : GoogleAppsScript.XML_Service.Element[];
-    getElements(feedUrl: string) : GoogleAppsScript.XML_Service.Element[];
-    collectElements(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
-    getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string;
-    getTitleFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string;
-    getDateFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : Date;
+    getAllRootElementsParallel(feedUrls: string[]) : XmlElement[];
+    getElements(feedUrl: string) : XmlElement[];
+    collectElements(root: XmlElement) : XmlElement[];
+    getLinkFromElement(baseElement: XmlElement) : string;
+    getTitleFromElement(baseElement: XmlElement) : string;
+    getDateFromElement(baseElement: XmlElement) : Date;
 }
