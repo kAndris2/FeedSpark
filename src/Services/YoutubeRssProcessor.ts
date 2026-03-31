@@ -1,9 +1,13 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
+import { IYoutubeSettings } from "../Interfaces/IYoutubeSettings";
+import { RssFeedParserFactory } from "./RssFeedParserFactory";
 
 export class YoutubeRssProcessor {
     private readonly _rssFeedParser: IRssFeedParser;
+    private readonly _config: IYoutubeSettings;
 
-    constructor(rssFeedParser: IRssFeedParser) {
-        this._rssFeedParser = rssFeedParser;
+    constructor(config: IYoutubeSettings) {
+        this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion);
+        this._config = config;
     }
 }
