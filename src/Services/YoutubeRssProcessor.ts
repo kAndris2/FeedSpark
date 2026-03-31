@@ -58,11 +58,8 @@ export class YoutubeRssProcessor {
 
         return responses.map((response, i) => {
             const html = response.getContentText();
-            const avatarRegex = /"avatar":\{"thumbnails":\[\{"url":"(.*?)"/;
-            const bannerRegex = /"imageBannerViewModel":\{"image":\{"sources":\[\{"url":"([^"]+)"/;
-
-            const avatarMatch = html.match(avatarRegex);
-            const bannerMatch = html.match(bannerRegex);
+            const avatarMatch = html.match(/"avatar":\{"thumbnails":\[\{"url":"(.*?)"/);
+            const bannerMatch = html.match(/"imageBannerViewModel":\{"image":\{"sources":\[\{"url":"([^"]+)"/);
 
             return {
                 channelId: this._config.channelIds[i],
