@@ -1,14 +1,13 @@
+import { INamespace } from "../Interfaces/INamespace";
 import { XmlElementInfo } from "../Interfaces/XmlElementInfo";
 
 export class XmlElement {
     private readonly _element: GoogleAppsScript.XML_Service.Element;
-    private readonly _namespace: GoogleAppsScript.XML_Service.Namespace;
-    private readonly _mediaNamespace: GoogleAppsScript.XML_Service.Namespace;
+    private readonly _namespaces: INamespace[];
 
-    constructor(element: GoogleAppsScript.XML_Service.Element, namespace: GoogleAppsScript.XML_Service.Namespace, mediaNamespace: GoogleAppsScript.XML_Service.Namespace) {
+    constructor(element: GoogleAppsScript.XML_Service.Element, namespaces: INamespace[]) {
         this._element = element;
-        this._namespace = namespace;
-        this._mediaNamespace = mediaNamespace;
+        this._namespaces = namespaces;
     }
 
     public getChildren(elementName: string) : XmlElement[] {
@@ -16,7 +15,7 @@ export class XmlElement {
 
         return this._element
             .getChildren(elementInfo.elementName, elementInfo.namespace)
-            .map(el => new XmlElement(el, this._namespace, this._mediaNamespace))
+            .map(el => new XmlElement(el, this._namespaces))
     }
 
     public getChild(elementName: string) : XmlElement {
@@ -29,7 +28,7 @@ export class XmlElement {
             throw new Error(`The requested child can not be null! - '${elementName}'`);
         }
         
-        return new XmlElement(child, this._namespace, this._mediaNamespace);
+        return new XmlElement(child, this._namespaces);
     }
 
     public getTextFromChildEl(elementName: string) : string | null {

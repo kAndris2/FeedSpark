@@ -1,6 +1,7 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
+import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
@@ -10,7 +11,10 @@ export class YoutubeRssProcessor {
     private readonly _config: YoutubeSettings;
 
     constructor(config: YoutubeSettings) {
-        this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion);
+        this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
+            RssNamespaceProvider.find("Media-RSS"),
+            RssNamespaceProvider.find("YouTube")
+        ]);
         this._config = config;
     }
 

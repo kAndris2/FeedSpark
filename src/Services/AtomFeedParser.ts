@@ -1,9 +1,11 @@
+import { INamespace } from "../Interfaces/INamespace";
+import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
 import { RssFeedParserBase } from "./RssFeedParserBase";
 
 export class AtomFeedParser extends RssFeedParserBase {
-    constructor() {
-        super("http://www.w3.org/2005/Atom", "http://search.yahoo.com/mrss/");
+    constructor(namespaces: INamespace[]) {
+        super([RssNamespaceProvider.find("Atom"), ...namespaces]);
     }
 
     public override getLinkFromElement(baseElement: XmlElement): string {

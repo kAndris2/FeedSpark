@@ -1,13 +1,12 @@
+import { INamespace } from "../Interfaces/INamespace";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { XmlElement } from "../Models/XmlElement";
 
 export abstract class RssFeedParserBase implements IRssFeedParser {
-    private readonly _namespace: GoogleAppsScript.XML_Service.Namespace;
-    private readonly _mediaNamespace: GoogleAppsScript.XML_Service.Namespace;
+    private readonly _namespaces: INamespace[];
 
-    constructor(namespaceStr: string, mediaNamespaceStr: string) {
-        this._namespace = XmlService.getNamespace(namespaceStr);
-        this._mediaNamespace = XmlService.getNamespace(mediaNamespaceStr);
+    constructor(namespaces: INamespace[]) {
+        this._namespaces = namespaces;
     }
 
     getAllRootElementsParallel(feedUrls: string[]): XmlElement[] {
@@ -68,6 +67,6 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         const document = XmlService.parse(xml);
         const rootEl = document.getRootElement();
 
-        return rootEl ? new XmlElement(rootEl, this._namespace, this._mediaNamespace) : null;
+        return rootEl ? new XmlElement(rootEl, this._namespaces) : null;
     }
 }
