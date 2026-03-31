@@ -25,14 +25,19 @@ export class YoutubeRssProcessor {
     }
 
     private _createYoutubeVideoData(entryEl: XmlElement) : IYoutubeVideoData {
+        const thumbnailUrl = entryEl.getChild("media:group")
+            .getValueFromChildEl("media:thumbnail", "url");
+        
+        const authorEl = entryEl.getChild("author");
+
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             url: this._rssFeedParser.getLinkFromElement(entryEl),
-            thumbnailUrl: "",
-            publishedDate: new Date(),
+            thumbnailUrl: thumbnailUrl ?? "",
+            publishedDate: this._rssFeedParser.getDateFromElement(entryEl),
             author: {
-                name: "",
-                url: ""
+                name: authorEl.getTextFromChildEl("name") ?? "",
+                url: authorEl.getTextFromChildEl("uri") ?? ""
             }
         };
     }

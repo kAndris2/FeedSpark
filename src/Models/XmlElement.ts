@@ -13,13 +13,24 @@ export class XmlElement {
             .map(el => new XmlElement(el, this._namespace))
     }
 
+    public getChild(elementName: string) : XmlElement {
+        const child = this._element
+            .getChild(elementName, this._namespace);
+
+        if (!child) {
+            throw new Error(`The requested child can not be null! - '${elementName}'`);
+        }
+        
+        return new XmlElement(child, this._namespace);
+    }
+
     public getTextFromChildEl(elementName: string) : string | null {
         return this._element
             .getChild(elementName, this._namespace)
             ?.getText() ?? null;
     }
 
-    public getValueFormChildEl(elementName: string, attribute: string) : string | null {
+    public getValueFromChildEl(elementName: string, attribute: string) : string | null {
         return this._element
             .getChild(elementName, this._namespace)
             ?.getAttribute(attribute)

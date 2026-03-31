@@ -7,7 +7,7 @@ export class AtomFeedParser extends RssFeedParserBase {
     }
 
     public override getLinkFromElement(baseElement: XmlElement): string {
-        const url = baseElement.getValueFormChildEl("link", "href");
+        const url = baseElement.getValueFromChildEl("link", "href");
 
         if (!url) {
             throw new Error("The url can not be empty!");
