@@ -14,13 +14,25 @@ export class YoutubeRssProcessor {
     }
 
     public getItems() : IYoutubeVideoData[] {
-        const result: IYoutubeVideoData[] = [];
         const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
-        const entryEls = rootEls.map(rootEl => this._rssFeedParser.collectElements(rootEl));
-
         
+        return rootEls
+            .map(rootEl => this._rssFeedParser.collectElements(rootEl))
+            .reduce((a, b) => a.concat(b), [])
+            .map(entryEl => this._createYoutubeVideoData(entryEl))
+    }
 
-        return result;
+    private _createYoutubeVideoData(entryEl: GoogleAppsScript.XML_Service.Element) : IYoutubeVideoData {
+        return {
+            title: this._rssFeedParser.getTitleFromElement(entryEl),
+            url: this._rssFeedParser.getLinkFromElement(entryEl),
+            thumbnailUrl: "",
+            publishedDate: new Date(),
+            author: {
+                name: "",
+                url: ""
+            }
+        };
     }
 }

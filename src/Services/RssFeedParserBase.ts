@@ -20,8 +20,14 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
             .filter(element => element !== null);
     }
 
-    getTitleFromElement(baseElement: GoogleAppsScript.XML_Service.Element): string | null {
-        return this.getTextFromChildEl(baseElement, "title");
+    getTitleFromElement(baseElement: GoogleAppsScript.XML_Service.Element): string {
+        const title = this.getTextFromChildEl(baseElement, "title");
+
+        if (!title) {
+            throw new Error("The title can not be empty!");
+        }
+        
+        return title;
     }
 
     getElements(feedUrl: string) : GoogleAppsScript.XML_Service.Element[] {
@@ -33,13 +39,24 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         return this.collectElements(rootEl);
     }
 
-    getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string | null {
-        return this.getTextFromChildEl(baseElement, "link");
+    getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string {
+        const url = this.getTextFromChildEl(baseElement, "link");
+
+        if (!url) {
+            throw new Error("The url can not be empty!");
+        }
+
+        return url;
     }
 
-    getDateFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : Date | null {
+    getDateFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : Date {
         const dateStr = this.getTextFromChildEl(baseElement, "pubDate");
-        return dateStr ? new Date(dateStr) : null;
+
+        if (!dateStr) {
+            throw new Error("The date can not be empty!");
+        }
+
+        return new Date(dateStr);
     }
 
     abstract collectElements(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
