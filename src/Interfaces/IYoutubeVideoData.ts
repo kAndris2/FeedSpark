@@ -10,4 +10,12 @@ export interface IYoutubeVideoData {
 interface IYoutubeChannelData {
     name: string;
     url: string;
+    avatarUrl: string;
+    bannerUrl: string;
+}
+
+export interface IYoutubeChannelImageData {
+    channelId: string;
+    avatarUrl: string;
+    bannerUrl: string;
 }
