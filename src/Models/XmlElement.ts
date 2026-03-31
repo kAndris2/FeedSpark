@@ -14,7 +14,7 @@ export class XmlElement {
         const elementInfo = this._getElementInfo(elementName);
 
         return this._element
-            .getChildren(elementInfo.elementName, elementInfo.namespace)
+            .getChildren(elementInfo.elementName, elementInfo.namespace as GoogleAppsScript.XML_Service.Namespace)
             .map(el => new XmlElement(el, this._namespaces))
     }
 
@@ -22,7 +22,7 @@ export class XmlElement {
         const elementInfo = this._getElementInfo(elementName);
 
         const child = this._element
-            .getChild(elementInfo.elementName, elementInfo.namespace);
+            .getChild(elementInfo.elementName, elementInfo.namespace as GoogleAppsScript.XML_Service.Namespace);
 
         if (!child) {
             throw new Error(`The requested child can not be null! - '${elementName}'`);
@@ -53,16 +53,18 @@ export class XmlElement {
     }
 
     private _getElementInfo(elementName: string) : XmlElementInfo {
-        if (elementName.includes("media")) {
-            return {
-                elementName: elementName.replace("media:", ""),
-                namespace: this._mediaNamespace
-            };
+        for (const namespaceInfo of this._namespaces) {
+            if (elementName.includes(namespaceInfo.prefix)) {
+                return {
+                    elementName: elementName.replace(namespaceInfo.prefix + ":", ""),
+                    namespace: namespaceInfo.namespace
+                };
+            }
         }
 
         return {
             elementName: elementName,
-            namespace: this._namespace
+            namespace: this._namespaces.find(n => n.prefix === "")?.namespace ?? null
         };
     }
 }

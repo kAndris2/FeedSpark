@@ -1,4 +1,4 @@
 export interface XmlElementInfo {
     elementName: string;
-    namespace: GoogleAppsScript.XML_Service.Namespace;
+    namespace: GoogleAppsScript.XML_Service.Namespace | null;
 }
