@@ -18,6 +18,7 @@ export class YoutubeRssProcessor {
         const channelImgData = this._fetchYoutubeChannelImageData();
         const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
+        const startDate = new Date(new Date().getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
         
         return rootEls
             .map(rootEl => this._rssFeedParser.collectElements(rootEl))
@@ -26,6 +27,7 @@ export class YoutubeRssProcessor {
                 const channelId = entryEl.getTextFromChildEl("yt:channelId");
                 return this._createYoutubeVideoData(entryEl, channelImgData.find(d => d.channelId == channelId));
             })
+            .filter(videoData => videoData.publishedDate > startDate);
     }
 
     private _createYoutubeVideoData(entryEl: XmlElement, channelImageData: IYoutubeChannelImageData | undefined) : IYoutubeVideoData {
