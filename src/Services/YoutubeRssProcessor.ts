@@ -49,7 +49,7 @@ export class YoutubeRssProcessor {
 
     private _fetchYoutubeChannelImageData() : IYoutubeChannelImageData[] {
         const requests = this._config.channelIds.map(channelId => ({
-            url: `https://www.youtube.com/channel/${channelId}`,
+            url: this._config.channelUrlTemplate.replace(HelperConstants.toBeReplaced, channelId),
             muteHttpExceptions: true,
             headers: { "User-Agent": "Mozilla/5.0" }
         }));

@@ -5,6 +5,7 @@ import { ConverterService } from "../Services/ConverterService";
 
 export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYoutubeSettings> {
     feedUrlTemplate!: string;
+    channelUrlTemplate!: string;
     rssVersion!: string;
     daysToCheck!: number;
     skipVideoIfContains!: string[];
@@ -14,7 +15,8 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
         if (!settings) return;
 
         Object.assign(this, settings);
-        this.feedUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, 'string');
+        this.feedUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, "string");
+        this.channelUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeChannelUrlTemplate, "string");
     }
 
     createDefault(): IYoutubeSettings {
