@@ -14,7 +14,7 @@ export class AtomFeedParser extends RssFeedParserBase {
         return dateStr ? new Date(dateStr) : null;
     }
 
-    protected collectElements(root: GoogleAppsScript.XML_Service.Element): GoogleAppsScript.XML_Service.Element[] {
+    collectElements(root: GoogleAppsScript.XML_Service.Element): GoogleAppsScript.XML_Service.Element[] {
         return root.getChildren("entry", this.namespace);
     }
 }

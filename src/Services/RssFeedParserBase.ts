@@ -7,18 +7,30 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         this.namespace = XmlService.getNamespace(namespaceStr);
     }
 
+    getAllRootElementsParallel(feedUrls: string[]): GoogleAppsScript.XML_Service.Element[] {
+        const requests = feedUrls.map(feedUrl => ({
+            url: feedUrl
+        }));
+
+        const responses = UrlFetchApp.fetchAll(requests);
+
+        return responses
+            .map(response => response.getContentText())
+            .map(xml => this._getRootElement(xml))
+            .filter(element => element !== null);
+    }
+
     getTitleFromElement(baseElement: GoogleAppsScript.XML_Service.Element): string | null {
         return this.getTextFromChildEl(baseElement, "title");
     }
 
     getElements(feedUrl: string) : GoogleAppsScript.XML_Service.Element[] {
         const xml = UrlFetchApp.fetch(feedUrl).getContentText();
-        const document = XmlService.parse(xml);
-        const root = document.getRootElement();
+        const rootEl = this._getRootElement(xml);
 
-        if (root == null) return [];
+        if (rootEl == null) return [];
         
-        return this.collectElements(root);
+        return this.collectElements(rootEl);
     }
 
     getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string | null {
@@ -30,7 +42,7 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         return dateStr ? new Date(dateStr) : null;
     }
 
-    protected abstract collectElements(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
+    abstract collectElements(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
 
     protected getTextFromChildEl(baseElement: GoogleAppsScript.XML_Service.Element, elementName: string) : string | null {
         return baseElement
@@ -43,5 +55,10 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
             .getChild(elementName, this.namespace)
             ?.getAttribute(attribute)
             ?.getValue() ?? null;
+    }
+
+    private _getRootElement(xml: string) : GoogleAppsScript.XML_Service.Element | null {
+        const document = XmlService.parse(xml);
+        return document.getRootElement();
     }
 }

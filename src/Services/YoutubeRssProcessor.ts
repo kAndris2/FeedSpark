@@ -15,24 +15,12 @@ export class YoutubeRssProcessor {
 
     public getItems() : IYoutubeVideoData[] {
         const result: IYoutubeVideoData[] = [];
-        const elements = this._fetchElements();
+        const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
+        const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
+        const entryEls = rootEls.map(rootEl => this._rssFeedParser.collectElements(rootEl));
+
         
 
-        /* for (const channelId of this._config.channelIds) {
-            const feedUrl = this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId);
-            const elements = this._rssFeedParser.getElements(feedUrl);
-        } */
-
         return result;
-    }
-
-    private _fetchElements() {
-        const requests = this._config.channelIds.map(channelId => ({
-            url: this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId)
-        }));
-
-        const responses = UrlFetchApp.fetchAll(requests);
-
-        return responses.map(r => r.getContentText());
     }
 }
