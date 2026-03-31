@@ -3,7 +3,7 @@ import { RssFeedParserBase } from "./RssFeedParserBase";
 
 export class AtomFeedParser extends RssFeedParserBase {
     constructor() {
-        super("http://www.w3.org/2005/Atom");
+        super("http://www.w3.org/2005/Atom", "http://search.yahoo.com/mrss/");
     }
 
     public override getLinkFromElement(baseElement: XmlElement): string {

@@ -3,9 +3,11 @@ import { XmlElement } from "../Models/XmlElement";
 
 export abstract class RssFeedParserBase implements IRssFeedParser {
     private readonly _namespace: GoogleAppsScript.XML_Service.Namespace;
+    private readonly _mediaNamespace: GoogleAppsScript.XML_Service.Namespace;
 
-    constructor(namespaceStr: string) {
+    constructor(namespaceStr: string, mediaNamespaceStr: string) {
         this._namespace = XmlService.getNamespace(namespaceStr);
+        this._mediaNamespace = XmlService.getNamespace(mediaNamespaceStr);
     }
 
     getAllRootElementsParallel(feedUrls: string[]): XmlElement[] {
@@ -66,6 +68,6 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         const document = XmlService.parse(xml);
         const rootEl = document.getRootElement();
 
-        return rootEl ? new XmlElement(rootEl, this._namespace) : null;
+        return rootEl ? new XmlElement(rootEl, this._namespace, this._mediaNamespace) : null;
     }
 }
