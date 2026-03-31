@@ -14,7 +14,7 @@ export class YoutubeRssProcessor {
         this._config = config;
     }
 
-    public getItems() : IYoutubeVideoData[] {
+    public getVideoData() : IYoutubeVideoData[] {
         const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
         
@@ -25,15 +25,14 @@ export class YoutubeRssProcessor {
     }
 
     private _createYoutubeVideoData(entryEl: XmlElement) : IYoutubeVideoData {
-        const thumbnailUrl = entryEl.getChild("media:group")
-            .getValueFromChildEl("media:thumbnail", "url");
-        
+        const mediaGroupEl = entryEl.getChild("media:group");
         const authorEl = entryEl.getChild("author");
 
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
+            description: mediaGroupEl.getTextFromChildEl("media:description") ?? "",
             url: this._rssFeedParser.getLinkFromElement(entryEl),
-            thumbnailUrl: thumbnailUrl ?? "",
+            thumbnailUrl: mediaGroupEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl),
             author: {
                 name: authorEl.getTextFromChildEl("name") ?? "",

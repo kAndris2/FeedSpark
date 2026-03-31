@@ -7,4 +7,5 @@ const configBase = new DriveService().getConfiguration();
 function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
     const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings);
+    const videoData = rssProcessor.getVideoData();
 }

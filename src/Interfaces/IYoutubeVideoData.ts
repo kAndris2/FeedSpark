@@ -1,5 +1,6 @@
 export interface IYoutubeVideoData {
     title: string;
+    description: string;
     url: string;
     thumbnailUrl: string;
     publishedDate: Date;
