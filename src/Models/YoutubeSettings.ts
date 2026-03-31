@@ -4,7 +4,7 @@ import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ConverterService } from "../Services/ConverterService";
 
 export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYoutubeSettings> {
-    feedUrl!: string;
+    feedUrlTemplate!: string;
     rssVersion!: string;
     daysToCheck!: number;
     skipVideoIfContains!: string[];
@@ -14,7 +14,7 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
         if (!settings) return;
 
         Object.assign(this, settings);
-        this.feedUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, 'string');
+        this.feedUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, 'string');
     }
 
     createDefault(): IYoutubeSettings {

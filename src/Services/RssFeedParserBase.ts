@@ -11,14 +11,14 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         return this.getTextFromChildEl(baseElement, "title");
     }
 
-    getItems(feedUrl: string) : GoogleAppsScript.XML_Service.Element[] {
+    getElements(feedUrl: string) : GoogleAppsScript.XML_Service.Element[] {
         const xml = UrlFetchApp.fetch(feedUrl).getContentText();
         const document = XmlService.parse(xml);
         const root = document.getRootElement();
 
         if (root == null) return [];
         
-        return this.collectItems(root);
+        return this.collectElements(root);
     }
 
     getLinkFromElement(baseElement: GoogleAppsScript.XML_Service.Element) : string | null {
@@ -30,7 +30,7 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
         return dateStr ? new Date(dateStr) : null;
     }
 
-    protected abstract collectItems(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
+    protected abstract collectElements(root: GoogleAppsScript.XML_Service.Element) : GoogleAppsScript.XML_Service.Element[];
 
     protected getTextFromChildEl(baseElement: GoogleAppsScript.XML_Service.Element, elementName: string) : string | null {
         return baseElement
