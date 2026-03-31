@@ -53,7 +53,14 @@ export class XmlElement {
     }
 
     private _getElementInfo(elementName: string) : XmlElementInfo {
-        for (const namespaceInfo of this._namespaces) {
+        if (!elementName.includes(":")) {
+            return {
+                elementName: elementName,
+                namespace: this._namespaces.find(n => n.prefix === "")?.namespace ?? null
+            };
+        }
+
+        for (const namespaceInfo of this._namespaces.filter(n => n.prefix !== "")) {
             if (elementName.includes(namespaceInfo.prefix)) {
                 return {
                     elementName: elementName.replace(namespaceInfo.prefix + ":", ""),
@@ -62,9 +69,6 @@ export class XmlElement {
             }
         }
 
-        return {
-            elementName: elementName,
-            namespace: this._namespaces.find(n => n.prefix === "")?.namespace ?? null
-        };
+        throw new Error(`Unhandled namespace on element! - '${elementName}'`);
     }
 }
