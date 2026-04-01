@@ -4,6 +4,7 @@ import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
+import { ConverterService } from "./ConverterService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 
 export class YoutubeRssProcessor {
@@ -63,7 +64,8 @@ export class YoutubeRssProcessor {
         const responses = UrlFetchApp.fetchAll(requests);
 
         return responses.map((response, i) => {
-            const html = response.getContentText();
+            const rawHtml = response.getContentText();
+            const html = ConverterService.decodeEscaped(rawHtml);
             const avatarMatch = html.match(/"avatar":\{"thumbnails":\[\{"url":"(.*?)"/);
             const bannerMatch = html.match(/"imageBannerViewModel":\{"image":\{"sources":\[\{"url":"([^"]+)"/);
 

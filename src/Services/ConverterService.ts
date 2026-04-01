@@ -12,4 +12,10 @@ export class ConverterService {
             default: return value as T;
         }
     }
+
+    public static decodeEscaped(text: string) : string {
+        return text.replace(/\\x([0-9A-Fa-f]{2})/g, (_, hex) =>
+            String.fromCharCode(parseInt(hex, 16))
+        );
+    }
 }
