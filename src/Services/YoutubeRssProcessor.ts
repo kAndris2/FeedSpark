@@ -28,9 +28,7 @@ export class YoutubeRssProcessor {
         return rootEls
             .map(rootEl => this._rssFeedParser.collectElements(rootEl))
             .reduce((a, b) => a.concat(b), [])
-            .map(entryEl => {
-                return this._createYoutubeVideoData(entryEl);
-            })
+            .map(entryEl => this._createYoutubeVideoData(entryEl))
             .filter(videoData => videoData.publishedDate > startDate);
     }
 
