@@ -4,12 +4,12 @@ export interface IYoutubeVideoData {
     url: string;
     thumbnailUrl: string;
     publishedDate: Date;
-    author: IYoutubeChannelData;
 }
 
-interface IYoutubeChannelData {
+export interface IYoutubeChannelData {
     name: string;
     url: string;
     avatarUrl: string;
     bannerUrl: string;
+    videos: IYoutubeVideoData[];
 }
