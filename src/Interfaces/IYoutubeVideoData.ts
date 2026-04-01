@@ -13,9 +13,3 @@ interface IYoutubeChannelData {
     avatarUrl: string;
     bannerUrl: string;
 }
-
-export interface IYoutubeChannelImageData {
-    channelId: string;
-    avatarUrl: string;
-    bannerUrl: string;
-}
