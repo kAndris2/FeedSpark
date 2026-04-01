@@ -1,7 +1,8 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
-import { IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
@@ -20,7 +21,6 @@ export class YoutubeRssProcessor {
     }
 
     public getVideoData() : IYoutubeVideoData[] {
-        const channelImgData = this._fetchYoutubeChannelImageData();
         const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
         const startDate = new Date(new Date().getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
@@ -29,13 +29,13 @@ export class YoutubeRssProcessor {
             .map(rootEl => this._rssFeedParser.collectElements(rootEl))
             .reduce((a, b) => a.concat(b), [])
             .map(entryEl => {
-                const channelId = entryEl.getTextFromChildEl("yt:channelId");
-                return this._createYoutubeVideoData(entryEl, channelImgData.find(d => d.channelId == channelId));
+                return this._createYoutubeVideoData(entryEl);
             })
             .filter(videoData => videoData.publishedDate > startDate);
     }
 
-    private _createYoutubeVideoData(entryEl: XmlElement, channelImageData: IYoutubeChannelImageData | undefined) : IYoutubeVideoData {
+    private _createYoutubeVideoData(entryEl: XmlElement) : IYoutubeVideoData {
+        const channelId = entryEl.getTextFromChildEl("yt:channelId");
         const mediaGroupEl = entryEl.getChild("media:group");
         const authorEl = entryEl.getChild("author");
 
@@ -48,32 +48,9 @@ export class YoutubeRssProcessor {
             author: {
                 name: authorEl.getTextFromChildEl("name") ?? "",
                 url: authorEl.getTextFromChildEl("uri") ?? "",
-                avatarUrl: channelImageData?.avatarUrl ?? "",
-                bannerUrl: channelImageData?.bannerUrl ?? ""
+                avatarUrl: ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelAvatarUrlTemplate, "string").replace(HelperConstants.toBeReplaced, channelId as string),
+                bannerUrl: ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelBannerUrlTemplate, "string").replace(HelperConstants.toBeReplaced, channelId as string)
             }
         };
-    }
-
-    private _fetchYoutubeChannelImageData() : IYoutubeChannelImageData[] {
-        const requests = this._config.channelIds.map(channelId => ({
-            url: this._config.channelUrlTemplate.replace(HelperConstants.toBeReplaced, channelId),
-            muteHttpExceptions: true,
-            headers: { "User-Agent": "Mozilla/5.0" }
-        }));
-
-        const responses = UrlFetchApp.fetchAll(requests);
-
-        return responses.map((response, i) => {
-            const rawHtml = response.getContentText();
-            const html = ConverterService.decodeEscaped(rawHtml);
-            const avatarMatch = html.match(/"avatar":\{"thumbnails":\[\{"url":"(.*?)"/);
-            const bannerMatch = html.match(/"imageBannerViewModel":\{"image":\{"sources":\[\{"url":"([^"]+)"/);
-
-            return {
-                channelId: this._config.channelIds[i],
-                avatarUrl: avatarMatch ? avatarMatch[1] : "",
-                bannerUrl: bannerMatch ? bannerMatch[1] : ""
-            } satisfies IYoutubeChannelImageData;
-        });
     }
 }
