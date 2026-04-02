@@ -1,6 +1,7 @@
 import { INamespace } from "../Interfaces/INamespace";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { XmlElement } from "../Models/XmlElement";
+import { HttpRequestManager } from "./HttpRequestManager";
 
 export abstract class RssFeedParserBase implements IRssFeedParser {
     private readonly _namespaces: INamespace[];
@@ -10,13 +11,7 @@ export abstract class RssFeedParserBase implements IRssFeedParser {
     }
 
     getAllRootElementsParallel(feedUrls: string[]): XmlElement[] {
-        const requests = feedUrls.map(feedUrl => ({
-            url: feedUrl
-        }));
-
-        const responses = UrlFetchApp.fetchAll(requests);
-
-        return responses
+        return HttpRequestManager.fetchParallel(feedUrls)
             .map(response => response.getContentText())
             .map(xml => this._getRootElement(xml))
             .filter(element => element !== null);
