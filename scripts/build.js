@@ -6,6 +6,11 @@ const filesToCopy = [
   {
     from: 'appsscript.json',
     to: 'dist/appsscript.json'
+  },
+  {
+    from: './src/Templates',
+    to: 'dist/Templates',
+    folder: true
   }
 ];
 
