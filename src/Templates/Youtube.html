@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: transparent;
+    margin: 0;
+    padding: 0;
+    color: inherit;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: transparent;
+}
+
+.channel-block {
+    padding: 40px 0;
+    background: transparent;
+}
+
+.channel-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.channel-banner {
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+}
+
+.channel-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin-top: -45px;
+    border: 4px solid white;
+    object-fit: cover;
+}
+
+.channel-name {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 8px 18px;
+    font-size: 22px;
+    font-weight: bold;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    color: #fff;
+}
+
+.channel-name a {
+    color: inherit;
+}
+
+.video-list {
+    margin-top: 15px;
+}
+
+.video-card {
+    position: relative;
+    display: flex;
+    gap: 15px;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+}
+
+.video-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 0;
+}
+
+.video-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.video-thumb {
+    width: 250px;
+    height: 140px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.video-info {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.video-title,
+.video-date,
+.video-description {
+    color: #fff;
+}
+
+.video-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.video-title a {
+    color: inherit;
+}
+
+.video-date {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+}
+
+.video-description {
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 10px;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+a {
+    text-decoration: none !important;
+}
+</style>
+
+<div class="container">
+
+    <? for (let channel of channels) { ?>
+        <div class="channel-block">
+
+            <div class="channel-header">
+                <img src="data:<?= channel.banner.contentType ?>;base64,<?= channel.banner.bytes ?>" class="channel-banner" alt="Banner">
+
+                <a href="<?= channel.url ?>">
+                    <img src="data:<?= channel.avatar.contentType ?>;base64,<?= channel.avatar.bytes ?>" class="channel-avatar" alt="Avatar">
+                </a>
+                
+                <div class="channel-name">
+                    <a href="<?= channel.url ?>">
+                        <?= channel.name ?>
+                    </a>
+                </div>
+            </div>
+
+            <div class="video-list">
+
+                <? for (let video of channel.videos) { ?>
+                    <div class="video-card" style="background-image:url('<?= video.thumbnailUrl ?>');">
+                        <a href="<?= video.url ?>">
+                            <img src="<?= video.thumbnailUrl ?>" class="video-thumb" alt="Thumbnail">
+                        </a>
+
+                        <div class="video-info">
+                            <div class="video-title">
+                                <a href="<?= video.url ?>">
+                                    <?= video.title ?>
+                                </a>
+                            </div>
+                            <div class="video-date">Uploaded: <?= Utilities.formatDate(video.publishedDate, Session.getScriptTimeZone(), "yyyy.MM.dd") ?></div>
+                            <div class="video-description">
+                                <?= video.description ?>
+                            </div>
+                        </div>
+                    </div>
+                <? } ?>
+
+            </div>
+
+        </div>
+    <? } ?>
+
+</div>
+
+</body>
+</html>
