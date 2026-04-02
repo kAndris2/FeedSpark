@@ -3,7 +3,7 @@ export abstract class MailServiceBase {
         const htmlOutput = htmlTemplate.evaluate().getContent();
 
         MailApp.sendEmail({
-            to: "",
+            to: Session.getActiveUser().getEmail(),
             subject: "Renderelt HTML sablon",
             htmlBody: htmlOutput
         });
