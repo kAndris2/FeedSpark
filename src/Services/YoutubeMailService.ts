@@ -3,6 +3,9 @@ import { MailServiceBase } from "./MailServiceBase";
 
 export class YoutubeMailService extends MailServiceBase {
     public sendSummary(channels: IYoutubeChannelData[]) : void {
-        
+        const template = this.getHtmlTemplate("Youtube");
+        template.channels = channels;
+
+        this.send(template);
     }
 }
