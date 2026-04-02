@@ -171,9 +171,9 @@ a {
             <div class="video-list">
 
                 <? for (let video of channel.videos) { ?>
-                    <div class="video-card" style="background-image:url('<?= video.thumbnailUrl ?>');">
+                    <div class="video-card" style="background-image:url('data:<?= video.thumbnail.contentType ?>;base64,<?= video.thumbnail.bytes ?>');">
                         <a href="<?= video.url ?>">
-                            <img src="<?= video.thumbnailUrl ?>" class="video-thumb" alt="Thumbnail">
+                            <img src="data:<?= video.thumbnail.contentType ?>;base64,<?= video.thumbnail.bytes ?>" class="video-thumb" alt="Thumbnail">
                         </a>
 
                         <div class="video-info">

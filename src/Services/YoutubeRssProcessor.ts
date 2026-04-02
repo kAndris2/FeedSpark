@@ -1,5 +1,5 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
-import { IYoutubeChannelData, IYoutubeChannelEncodedImage, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeChannelData, IYoutubeEncodedImage, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
@@ -59,12 +59,14 @@ export class YoutubeRssProcessor {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             description: mediaGroupEl.getTextFromChildEl("media:description") ?? "",
             url: this._rssFeedParser.getLinkFromElement(entryEl),
-            thumbnailUrl: mediaGroupEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
+            thumbnail: this._getEncodedChannelImage(
+                mediaGroupEl.getValueFromChildEl("media:thumbnail", "url") ?? ""
+            ),
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
         };
     }
 
-    private _getEncodedChannelImage(url: string) : IYoutubeChannelEncodedImage {
+    private _getEncodedChannelImage(url: string) : IYoutubeEncodedImage {
         const response = UrlFetchApp.fetch(url, {
             muteHttpExceptions: true,
             followRedirects: true
