@@ -33,10 +33,10 @@ export class YoutubeRssProcessor {
         
         return rootEls
             .map(r => this._createChannelData(r))
-            .filter(c => c.videos.length >= 1);
+            .filter(c => c !== null);
     }
 
-    private _createChannelData(rootEl: XmlElement) : IYoutubeChannelData {
+    private _createChannelData(rootEl: XmlElement) : IYoutubeChannelData | null {
         const startDate = new Date(new Date().getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
         const channelId = "UC" + rootEl.getTextFromChildEl("yt:channelId");
         const authorEl = rootEl.getChild("author");
@@ -45,6 +45,9 @@ export class YoutubeRssProcessor {
                 const publishedDate = this._rssFeedParser.getDateFromElement(e);
                 return publishedDate && publishedDate >= startDate;
             });
+
+        if (entries.length == 0) return null;
+
         const [avatar, banner, thumbnails] = this._getChannelEncodedImages(channelId, entries);
 
         return {
