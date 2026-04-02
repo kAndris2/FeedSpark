@@ -1,5 +1,5 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
-import { IYoutubeChannelData, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeChannelData, IYoutubeChannelEncodedImage, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
@@ -38,8 +38,14 @@ export class YoutubeRssProcessor {
         return {
             name: authorEl.getTextFromChildEl("name") ?? "",
             url: authorEl.getTextFromChildEl("uri") ?? "",
-            avatarUrl: ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelAvatarUrlTemplate, "string").replace(HelperConstants.toBeReplaced, channelId as string),
-            bannerUrl: ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelBannerUrlTemplate, "string").replace(HelperConstants.toBeReplaced, channelId as string),
+            avatar: this._getEncodedChannelImage(
+                ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelAvatarUrlTemplate, "string")
+                    .replace(HelperConstants.toBeReplaced, channelId as string)
+            ),
+            banner: this._getEncodedChannelImage(
+                ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelBannerUrlTemplate, "string")
+                    .replace(HelperConstants.toBeReplaced, channelId as string)
+            ),
             videos: entries
                 .map(e => this._createVideoData(e))
                 .filter(v => v.publishedDate > startDate)
@@ -56,5 +62,19 @@ export class YoutubeRssProcessor {
             thumbnailUrl: mediaGroupEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
         };
+    }
+
+    private _getEncodedChannelImage(url: string) : IYoutubeChannelEncodedImage {
+        const response = UrlFetchApp.fetch(url, {
+            muteHttpExceptions: true,
+            followRedirects: true
+        });
+
+        const blob = response.getBlob();
+
+        return {
+            bytes: Utilities.base64Encode(blob.getBytes()),
+            contentType: blob.getContentType()
+        }
     }
 }

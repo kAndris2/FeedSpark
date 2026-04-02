@@ -9,7 +9,12 @@ export interface IYoutubeVideoData {
 export interface IYoutubeChannelData {
     name: string;
     url: string;
-    avatarUrl: string;
-    bannerUrl: string;
+    avatar: IYoutubeChannelEncodedImage;
+    banner: IYoutubeChannelEncodedImage;
     videos: IYoutubeVideoData[];
+}
+
+export interface IYoutubeChannelEncodedImage {
+    bytes: string;
+    contentType: string | null;
 }
