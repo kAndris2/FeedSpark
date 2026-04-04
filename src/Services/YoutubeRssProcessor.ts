@@ -52,14 +52,13 @@ export class YoutubeRssProcessor {
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
+        const mediaEl = entryEl.getChild("media:group");
+
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
-            description: entryEl
-                .getChild("media:group")
-                .getTextFromChildEl("media:description") ?? "",
+            description: mediaEl.getTextFromChildEl("media:description") ?? "",
             url: this._rssFeedParser.getLinkFromElement(entryEl),
-            thumbnailUrl: entryEl.getChild("media:group")
-                .getValueFromChildEl("media:thumbnail", "url") ?? "",
+            thumbnailUrl: mediaEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
         };
     }
