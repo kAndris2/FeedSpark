@@ -155,10 +155,10 @@ a {
         <div class="channel-block">
 
             <div class="channel-header">
-                <img src="data:<?= channel.banner.contentType ?>;base64,<?= channel.banner.bytes ?>" class="channel-banner" alt="Banner">
+                <img src="<?= channel.bannerUrl ?>" class="channel-banner" alt="Banner">
 
                 <a href="<?= channel.url ?>">
-                    <img src="data:<?= channel.avatar.contentType ?>;base64,<?= channel.avatar.bytes ?>" class="channel-avatar" alt="Avatar">
+                    <img src="<?= channel.avatarUrl ?>" class="channel-avatar" alt="Avatar">
                 </a>
                 
                 <div class="channel-name">
@@ -171,9 +171,9 @@ a {
             <div class="video-list">
 
                 <? for (let video of channel.videos) { ?>
-                    <div class="video-card" style="background-image:url('data:<?= video.thumbnail.contentType ?>;base64,<?= video.thumbnail.bytes ?>');">
+                    <div class="video-card" style="background-image:url('<?= video.thumbnailUrl ?>');">
                         <a href="<?= video.url ?>">
-                            <img src="data:<?= video.thumbnail.contentType ?>;base64,<?= video.thumbnail.bytes ?>" class="video-thumb" alt="Thumbnail">
+                            <img src="<?= video.thumbnailUrl ?>" class="video-thumb" alt="Thumbnail">
                         </a>
 
                         <div class="video-info">

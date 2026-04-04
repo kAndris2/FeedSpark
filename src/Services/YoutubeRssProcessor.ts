@@ -1,19 +1,11 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
-import { IYoutubeChannelData, IYoutubeEncodedImage, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
-import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
-import { HttpRequestManager } from "./HttpRequestManager";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
-
-type ChannelEncodedImages = [
-    avatar: IYoutubeEncodedImage,
-    banner: IYoutubeEncodedImage,
-    thumbnails: IYoutubeEncodedImage[]
-];
 
 export class YoutubeRssProcessor {
     private readonly _rssFeedParser: IRssFeedParser;
@@ -48,62 +40,46 @@ export class YoutubeRssProcessor {
 
         if (entries.length == 0) return null;
 
-        const [avatar, banner, thumbnails] = this._getChannelEncodedImages(channelId, entries);
+        const channelImgs = this._fetchYoutubeChannelImageData(channelId);
 
         return {
             name: authorEl.getTextFromChildEl("name") ?? "",
             url: authorEl.getTextFromChildEl("uri") ?? "",
-            avatar: avatar,
-            banner: banner,
-            videos: entries.map((e, i) => this._createVideoData(e, thumbnails[i]))
+            avatarUrl: channelImgs.avatarUrl,
+            bannerUrl: channelImgs.bannerUrl,
+            videos: entries.map(e => this._createVideoData(e))
         };
     }
 
-    private _createVideoData(entryEl: XmlElement, thumbnail: IYoutubeEncodedImage) : IYoutubeVideoData {
+    private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             description: entryEl
                 .getChild("media:group")
                 .getTextFromChildEl("media:description") ?? "",
             url: this._rssFeedParser.getLinkFromElement(entryEl),
-            thumbnail: thumbnail,
+            thumbnailUrl: entryEl.getChild("media:group")
+                .getValueFromChildEl("media:thumbnail", "url") ?? "",
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
         };
     }
 
-    private _getChannelEncodedImages(channelId: string, entries: XmlElement[]) : ChannelEncodedImages {
-        const channelImgUrls = [
-            ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelAvatarUrlTemplate, "string")
-                .replace(HelperConstants.toBeReplaced, channelId as string),
-            ConverterService.getConvertedProperty<string>(ScriptPropertiesKeyVault.youtubeChannelBannerUrlTemplate, "string")
-                .replace(HelperConstants.toBeReplaced, channelId as string)
-        ];
-        const thumbnailUrls = entries.map(e => {
-            const mediaGroupEl = e.getChild("media:group");
-            return mediaGroupEl.getValueFromChildEl("media:thumbnail", "url") ?? "";
-        });
-
-        const urls = [...channelImgUrls, ...thumbnailUrls];
-        const encodedImages = this._createEncodedChannelImages(urls);
-
-        const avatar = encodedImages[0];
-        const banner = encodedImages[1];
-        const thumbnails = encodedImages.slice(2);
-
-        return [avatar, banner, thumbnails];
-    }
-
-    private _createEncodedChannelImages(urls: string[]) : IYoutubeEncodedImage[] {
-        const blobs = HttpRequestManager.fetchBlobsParallel(urls, {
+    private _fetchYoutubeChannelImageData(channelId: string) : IYoutubeChannelImageData {
+        const url = this._config.channelUrlTemplate.replace(HelperConstants.toBeReplaced, channelId);
+        const response = UrlFetchApp.fetch(url, {
             muteHttpExceptions: true,
-            followRedirects: true
+            headers: { "User-Agent": "Mozilla/5.0" }
         });
 
-        return blobs.map(b => {
-            return {
-                bytes: Utilities.base64Encode(b.getBytes()),
-                contentType: b.getContentType()
-            }
-        });
+        const rawHtml = response.getContentText();
+        const html = ConverterService.decodeEscaped(rawHtml);
+        const avatarMatch = html.match(/"avatar":\{"thumbnails":\[\{"url":"(.*?)"/);
+        const bannerMatch = html.match(/"imageBannerViewModel":\{"image":\{"sources":\[\{"url":"([^"]+)"/);
+
+        return {
+            channelId: channelId,
+            avatarUrl: avatarMatch ? ConverterService.fixUrl(avatarMatch[1]) : "",
+            bannerUrl: bannerMatch ? ConverterService.fixUrl(bannerMatch[1]) : ""
+        } satisfies IYoutubeChannelImageData;
     }
 }

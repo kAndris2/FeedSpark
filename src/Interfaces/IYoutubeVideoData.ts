@@ -2,19 +2,20 @@ export interface IYoutubeVideoData {
     title: string;
     description: string;
     url: string;
-    thumbnail: IYoutubeEncodedImage;
+    thumbnailUrl: string;
     publishedDate: Date;
 }
 
 export interface IYoutubeChannelData {
     name: string;
     url: string;
-    avatar: IYoutubeEncodedImage;
-    banner: IYoutubeEncodedImage;
+    avatarUrl: string;
+    bannerUrl: string;
     videos: IYoutubeVideoData[];
 }
 
-export interface IYoutubeEncodedImage {
-    bytes: string;
-    contentType: string | null;
+export interface IYoutubeChannelImageData {
+    channelId: string;
+    avatarUrl: string;
+    bannerUrl: string;
 }
