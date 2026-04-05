@@ -1,5 +1,5 @@
 export class YoutubeChannelProvider {
-    public getChannelIds(): string[] {
+    public getChannelIds(channelIdsToIgnore: string[]): string[] {
         let channelIds: string[] = [];
         let pageToken: string | null = null;
 
@@ -18,6 +18,11 @@ export class YoutubeChannelProvider {
             pageToken = response.nextPageToken ?? null;
         } while (pageToken);
 
-        return channelIds;
+        const ignoreSet = new Set(channelIdsToIgnore);
+        const filteredIds = channelIds.filter(function(id) {
+            return !ignoreSet.has(id);
+        });
+
+        return filteredIds;
     }
 }

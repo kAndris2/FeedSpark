@@ -6,12 +6,15 @@ import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
+import { YoutubeChannelProvider } from "./YoutubeChannelProvider";
 
 export class YoutubeRssProcessor {
+    private readonly _channelProvider: YoutubeChannelProvider;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
 
     constructor(config: YoutubeSettings) {
+        this._channelProvider = new YoutubeChannelProvider();
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
             RssNamespaceProvider.find("YouTube")
@@ -20,7 +23,8 @@ export class YoutubeRssProcessor {
     }
 
     public getSummary() : IYoutubeSummary {
-        const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
+        const channelIds = this._channelProvider.getChannelIds(this._config.ignoredChannelIds);
+        const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
         const periodEnd = new Date();
         const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);

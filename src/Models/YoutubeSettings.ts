@@ -9,7 +9,7 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
     rssVersion!: string;
     daysToCheck!: number;
     skipVideoIfContains!: string[];
-    channelIds!: string[];
+    ignoredChannelIds!: string[];
     
     constructor(settings?: IYoutubeSettings) {
         if (!settings) return;
@@ -24,7 +24,7 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
             rssVersion: "Atom",
             daysToCheck: 0,
             skipVideoIfContains: [],
-            channelIds: []
+            ignoredChannelIds: []
         };
     }
 }
