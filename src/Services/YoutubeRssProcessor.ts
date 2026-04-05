@@ -59,6 +59,11 @@ export class YoutubeRssProcessor {
             description: mediaEl.getTextFromChildEl("media:description") ?? "",
             url: this._rssFeedParser.getLinkFromElement(entryEl),
             thumbnailUrl: mediaEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
+            views: parseInt(
+                mediaEl
+                    .getChild("media:community")
+                    .getValueFromChildEl("media:statistics", "views") ?? "0"
+            ),
             publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
         };
     }
