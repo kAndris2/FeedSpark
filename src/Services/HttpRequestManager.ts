@@ -7,9 +7,4 @@ export class HttpRequestManager {
 
         return UrlFetchApp.fetchAll(requests);
     }
-
-    public static fetchBlobsParallel(urls: string[], params?: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions) : GoogleAppsScript.Base.Blob[] {
-        return this.fetchParallel(urls, params)
-            .map(r => r.getBlob());
-    }
 }
