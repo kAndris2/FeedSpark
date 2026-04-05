@@ -1,10 +1,10 @@
 export abstract class MailServiceBase {
-    protected send(htmlTemplate: GoogleAppsScript.HTML.HtmlTemplate) : void {
+    protected send(htmlTemplate: GoogleAppsScript.HTML.HtmlTemplate, subject: string) : void {
         const htmlOutput = htmlTemplate.evaluate().getContent();
 
         MailApp.sendEmail({
             to: Session.getActiveUser().getEmail(),
-            subject: "Renderelt HTML sablon",
+            subject: subject,
             htmlBody: htmlOutput
         });
     }
