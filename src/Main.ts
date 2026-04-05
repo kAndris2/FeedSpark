@@ -8,10 +8,10 @@ const configBase = new DriveService().getConfiguration();
 function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
     const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings);
-    const channels = rssProcessor.getChannels();
+    const summary = rssProcessor.getSummary();
 
-    if (channels.length == 0) return;
+    if (summary.channels.length == 0) return;
 
     const mailService = new YoutubeMailService();
-    mailService.sendSummary(channels);
+    mailService.sendSummary(summary);
 }

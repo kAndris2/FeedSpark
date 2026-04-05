@@ -1,3 +1,9 @@
+export interface IYoutubeSummary {
+    channels: IYoutubeChannelData[];
+    periodStart: Date;
+    periodEnd: Date;
+}
+
 export interface IYoutubeVideoData {
     title: string;
     description: string;

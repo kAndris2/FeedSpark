@@ -1,5 +1,5 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
-import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
@@ -19,23 +19,28 @@ export class YoutubeRssProcessor {
         this._config = config;
     }
 
-    public getChannels() : IYoutubeChannelData[] {
+    public getSummary() : IYoutubeSummary {
         const feedUrls = this._config.channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
+        const periodEnd = new Date();
+        const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
         
-        return rootEls
-            .map(r => this._createChannelData(r))
-            .filter(c => c !== null);
+        return {
+            channels: rootEls
+                .map(r => this._createChannelData(r, periodStart))
+                .filter(c => c !== null),
+            periodEnd: periodEnd,
+            periodStart: periodStart
+        };
     }
 
-    private _createChannelData(rootEl: XmlElement) : IYoutubeChannelData | null {
-        const startDate = new Date(new Date().getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
+    private _createChannelData(rootEl: XmlElement, periodStart: Date) : IYoutubeChannelData | null {
         const channelId = "UC" + rootEl.getTextFromChildEl("yt:channelId");
         const authorEl = rootEl.getChild("author");
         const entries = this._rssFeedParser.collectElements(rootEl)
             .filter(e => {
                 const publishedDate = this._rssFeedParser.getDateFromElement(e);
-                return publishedDate && publishedDate >= startDate;
+                return publishedDate && publishedDate >= periodStart;
             });
 
         if (entries.length == 0) return null;

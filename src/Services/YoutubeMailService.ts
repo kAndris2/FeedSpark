@@ -1,10 +1,10 @@
-import { IYoutubeChannelData } from "../Interfaces/IYoutubeVideoData";
+import { IYoutubeSummary } from "../Interfaces/IYoutubeSummary";
 import { MailServiceBase } from "./MailServiceBase";
 
 export class YoutubeMailService extends MailServiceBase {
-    public sendSummary(channels: IYoutubeChannelData[]) : void {
+    public sendSummary(summary: IYoutubeSummary) : void {
         const template = this.getHtmlTemplate("Youtube");
-        template.channels = channels;
+        template.summary = summary;
 
         this.send(template);
     }
