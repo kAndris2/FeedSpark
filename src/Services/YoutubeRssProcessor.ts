@@ -29,8 +29,8 @@ export class YoutubeRssProcessor {
             channels: rootEls
                 .map(r => this._createChannelData(r, periodStart))
                 .filter(c => c !== null),
-            periodEnd: periodEnd,
-            periodStart: periodStart
+            periodEndStr: ConverterService.getFormattedDateStr(periodEnd),
+            periodStartStr: ConverterService.getFormattedDateStr(periodStart)
         };
     }
 
@@ -69,7 +69,9 @@ export class YoutubeRssProcessor {
                     .getChild("media:community")
                     .getValueFromChildEl("media:statistics", "views") ?? "0"
             ),
-            publishedDate: this._rssFeedParser.getDateFromElement(entryEl)
+            publishedDateStr: ConverterService.getFormattedDateStr(
+                this._rssFeedParser.getDateFromElement(entryEl)
+            )
         };
     }
 

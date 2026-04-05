@@ -1,7 +1,7 @@
 export interface IYoutubeSummary {
     channels: IYoutubeChannelData[];
-    periodStart: Date;
-    periodEnd: Date;
+    periodStartStr: string;
+    periodEndStr: string;
 }
 
 export interface IYoutubeVideoData {
@@ -10,7 +10,7 @@ export interface IYoutubeVideoData {
     url: string;
     thumbnailUrl: string;
     views: number;
-    publishedDate: Date;
+    publishedDateStr: string;
 }
 
 export interface IYoutubeChannelData {

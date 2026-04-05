@@ -28,4 +28,8 @@ export class ConverterService {
             .replace(/\s+/g, "")
             .trim();
     }
+
+    public static getFormattedDateStr(date: Date) : string {
+        return Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy.MM.dd");
+    }
 }
