@@ -45,6 +45,10 @@ export class YoutubeRssProcessor {
             .filter(e => {
                 const publishedDate = this._rssFeedParser.getDateFromElement(e);
                 return publishedDate && publishedDate >= periodStart;
+            })
+            .filter(e => {
+                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
+                return !videoUrl.includes("shorts");
             });
 
         if (entries.length == 0) return null;
