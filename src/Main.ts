@@ -6,7 +6,6 @@ import { YoutubeRssProcessor } from "./Services/YoutubeRssProcessor";
 
 const configBase = new DriveService().getConfiguration();
 
-
 function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
     const geminiService = new GeminiService(configBase.geminiSettings);
