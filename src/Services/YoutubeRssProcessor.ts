@@ -69,6 +69,8 @@ export class YoutubeRssProcessor {
                 const videoUrl = this._rssFeedParser.getLinkFromElement(e);
                 return !videoUrl.includes("shorts");
             });
+        
+        if (entries.length == 0) return [];
 
         const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
         const results = this._aiService.classifyMusicTitles(titles);
