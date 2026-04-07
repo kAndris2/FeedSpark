@@ -8,20 +8,13 @@ export class YoutubeAiService extends GeminiService {
 
     public classifyMusicTitles(titles: string[]) : boolean[] {
         const prompt = `
-            You are a classifier. Your task is to determine whether each YouTube video title in the list below represents music-related content.
+            Classify YouTube titles.
 
-            Mark a title as TRUE only if:
-            - it is clearly music content (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi mix, beat tape, official audio, official music video).
+            Output: JSON boolean array in same order.
 
-            Mark a title as FALSE if:
-            - it is a livestream, live broadcast, live recording, live session, live performance, concert recording, premiere, or anything indicating a live event.
-            - it is not music-related (vlog, commentary, podcast, tutorial, tech video, gaming, reaction, news, review, educational content).
+            TRUE: music (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi, beat tape, official audio/video).
 
-            Output format:
-            Return ONLY a JSON array of booleans, where each element corresponds to the input title at the same index.
-            Example: [true, false, true]
-
-            Do not include explanations or any additional text.
+            FALSE: live content (live, livestream, live session, live recording, concert, premiere) or non‑music (vlog, commentary, podcast, tutorial, tech, gaming, reaction, news, review, educational).
 
             Titles:
             ${JSON.stringify(titles, null, 2)}
