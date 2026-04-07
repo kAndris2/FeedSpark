@@ -10,8 +10,8 @@ export abstract class GeminiService {
 
     constructor(settings: IGeminiSettings) {
         this._apiKey = settings.key;
+        this._aiModel = settings.model;
         this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiApiUrl, 'string');
-        this._aiModel = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiModel, 'string');
     }
 
     protected send(prompt: string): any {

@@ -3,6 +3,7 @@ import { ISelfConstructible } from "../Interfaces/ISelfConstructible";
 
 export class GeminiSettings implements IGeminiSettings, ISelfConstructible<IGeminiSettings> {
     key!: string;
+    model!: string;
 
     constructor(settings?: IGeminiSettings) {
         if (!settings) return;
@@ -12,7 +13,8 @@ export class GeminiSettings implements IGeminiSettings, ISelfConstructible<IGemi
 
     createDefault(): IGeminiSettings {
         return {
-            key: ""
+            key: "",
+            model: ""
         }
     }
 
