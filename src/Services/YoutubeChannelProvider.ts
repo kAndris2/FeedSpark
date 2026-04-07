@@ -4,7 +4,7 @@ export class YoutubeChannelProvider {
         let pageToken: string | null = null;
 
         do {
-            const response = GoogleAppsScript.YouTube.Subscriptions.list("snippet", {
+            const response: any = YouTube?.Subscriptions.list("snippet", {
                 mine: true,
                 maxResults: 50,
                 pageToken: pageToken
@@ -12,7 +12,7 @@ export class YoutubeChannelProvider {
 
             channelIds = [
                 ...channelIds,
-                ...response.items.map(item => item.snippet.resourceId.channelId)
+                ...response.items.map((item: any) => item.snippet.resourceId.channelId)
             ];
 
             pageToken = response.nextPageToken ?? null;
