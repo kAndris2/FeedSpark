@@ -1,3 +1,4 @@
+import { IGeminiSettings } from "../Interfaces/IGeminiSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ConverterService } from "./ConverterService";
 import { HttpRequestManager } from "./HttpRequestManager";
@@ -7,8 +8,8 @@ export class GeminiService {
     private readonly _apiUrl: string;
     private readonly _aiModel: string;
 
-    constructor(apiKey: string) {
-        this._apiKey = apiKey;
+    constructor(settings: IGeminiSettings) {
+        this._apiKey = settings.key;
         this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiApiUrl, 'string');
         this._aiModel = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiModel, 'string');
     }

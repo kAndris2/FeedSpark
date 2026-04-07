@@ -9,7 +9,7 @@ const configBase = new DriveService().getConfiguration();
 
 function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
-    const geminiService = new GeminiService(configBase.geminiSettings.key);
+    const geminiService = new GeminiService(configBase.geminiSettings);
     const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, geminiService);
     const summary = rssProcessor.getSummary();
 
