@@ -72,10 +72,15 @@ export class YoutubeRssProcessor {
         
         if (entries.length == 0) return [];
 
-        const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
-        const results = this._aiService.classifyMusicTitles(titles);
+        try {
+            const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
+            const results = this._aiService.classifyMusicTitles(titles);
 
-        return entries.filter((_, i) => results[i] === true);
+            return entries.filter((_, i) => results[i] === true);
+        }
+        catch (ex) {
+            return entries;
+        }
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
