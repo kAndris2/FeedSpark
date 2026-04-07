@@ -44,15 +44,7 @@ export class YoutubeRssProcessor {
     private _createChannelData(rootEl: XmlElement, periodStart: Date) : IYoutubeChannelData | null {
         const channelId = "UC" + rootEl.getTextFromChildEl("yt:channelId");
         const authorEl = rootEl.getChild("author");
-        const entries = this._rssFeedParser.collectElements(rootEl)
-            .filter(e => {
-                const publishedDate = this._rssFeedParser.getDateFromElement(e);
-                return publishedDate && publishedDate >= periodStart;
-            })
-            .filter(e => {
-                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
-                return !videoUrl.includes("shorts");
-            });
+        const entries = this._getRelevantEntries(rootEl, periodStart);
 
         if (entries.length == 0) return null;
 
@@ -65,6 +57,42 @@ export class YoutubeRssProcessor {
             bannerUrl: channelImgs.bannerUrl,
             videos: entries.map(e => this._createVideoData(e))
         };
+    }
+
+    private _getRelevantEntries(rootEl: XmlElement, periodStart: Date) : XmlElement[] {
+        const entries = this._rssFeedParser.collectElements(rootEl)
+            .filter(e => {
+                const publishedDate = this._rssFeedParser.getDateFromElement(e);
+                return publishedDate && publishedDate >= periodStart;
+            })
+            .filter(e => {
+                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
+                return !videoUrl.includes("shorts");
+            });
+
+        const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
+        const prompt = `
+            You are a classifier. Your task is to determine whether each YouTube video title in the list below represents music-related content.
+
+            Mark a title as TRUE only if:
+            - it is clearly music content (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi mix, beat tape, official audio, official music video).
+
+            Mark a title as FALSE if:
+            - it is a livestream, live broadcast, live recording, live session, live performance, concert recording, premiere, or anything indicating a live event.
+            - it is not music-related (vlog, commentary, podcast, tutorial, tech video, gaming, reaction, news, review, educational content).
+
+            Output format:
+            Return ONLY a JSON array of booleans, where each element corresponds to the input title at the same index.
+            Example: [true, false, true]
+
+            Do not include explanations or any additional text.
+
+            Titles:
+            ${JSON.stringify(titles, null, 2)}
+        `;
+        const geminiResults = this._geminiService.classify(prompt);
+
+        return entries.filter((_, i) => geminiResults[i] === true);
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
