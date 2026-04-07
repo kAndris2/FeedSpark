@@ -1,0 +1,28 @@
+export interface IYoutubeSummary {
+    channels: IYoutubeChannelData[];
+    periodStartStr: string;
+    periodEndStr: string;
+}
+
+export interface IYoutubeVideoData {
+    title: string;
+    description: string;
+    url: string;
+    thumbnailUrl: string;
+    views: number;
+    publishedDateStr: string;
+}
+
+export interface IYoutubeChannelData {
+    name: string;
+    url: string;
+    avatarUrl: string;
+    bannerUrl: string;
+    videos: IYoutubeVideoData[];
+}
+
+export interface IYoutubeChannelImageData {
+    channelId: string;
+    avatarUrl: string;
+    bannerUrl: string;
+}
