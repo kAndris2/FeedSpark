@@ -5,15 +5,18 @@ import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
+import { GeminiService } from "./GeminiService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 import { YoutubeChannelProvider } from "./YoutubeChannelProvider";
 
 export class YoutubeRssProcessor {
+    private readonly _geminiService: GeminiService;
     private readonly _channelProvider: YoutubeChannelProvider;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
 
-    constructor(config: YoutubeSettings) {
+    constructor(config: YoutubeSettings, geminiService: GeminiService) {
+        this._geminiService = geminiService;
         this._channelProvider = new YoutubeChannelProvider();
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
