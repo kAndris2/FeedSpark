@@ -5,18 +5,18 @@ import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
-import { GeminiService } from "./GeminiService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
+import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeChannelProvider } from "./YoutubeChannelProvider";
 
 export class YoutubeRssProcessor {
-    private readonly _geminiService: GeminiService;
+    private readonly _aiService: YoutubeAiService;
     private readonly _channelProvider: YoutubeChannelProvider;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
 
-    constructor(config: YoutubeSettings, geminiService: GeminiService) {
-        this._geminiService = geminiService;
+    constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
+        this._aiService = aiService;
         this._channelProvider = new YoutubeChannelProvider();
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
@@ -71,28 +71,9 @@ export class YoutubeRssProcessor {
             });
 
         const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
-        const prompt = `
-            You are a classifier. Your task is to determine whether each YouTube video title in the list below represents music-related content.
+        const results = this._aiService.classifyMusicTitles(titles);
 
-            Mark a title as TRUE only if:
-            - it is clearly music content (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi mix, beat tape, official audio, official music video).
-
-            Mark a title as FALSE if:
-            - it is a livestream, live broadcast, live recording, live session, live performance, concert recording, premiere, or anything indicating a live event.
-            - it is not music-related (vlog, commentary, podcast, tutorial, tech video, gaming, reaction, news, review, educational content).
-
-            Output format:
-            Return ONLY a JSON array of booleans, where each element corresponds to the input title at the same index.
-            Example: [true, false, true]
-
-            Do not include explanations or any additional text.
-
-            Titles:
-            ${JSON.stringify(titles, null, 2)}
-        `;
-        const geminiResults = this._geminiService.classify(prompt);
-
-        return entries.filter((_, i) => geminiResults[i] === true);
+        return entries.filter((_, i) => results[i] === true);
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {

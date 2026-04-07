@@ -3,7 +3,7 @@ import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ConverterService } from "./ConverterService";
 import { HttpRequestManager } from "./HttpRequestManager";
 
-export class GeminiService {
+export abstract class GeminiService {
     private readonly _apiKey: string;
     private readonly _apiUrl: string;
     private readonly _aiModel: string;
@@ -14,7 +14,7 @@ export class GeminiService {
         this._aiModel = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiModel, 'string');
     }
 
-    public classify(prompt: string) : boolean[] {
+    protected send(prompt: string) : any {
         const url = `${this._apiUrl}/models/${this._aiModel}:generateContent?key=${this._apiKey}`;
         const payload = {
             contents: [
@@ -36,19 +36,6 @@ export class GeminiService {
         const data = JSON.parse(response.getContentText());
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? (() => { throw new Error('Unexpected structure of response!'); })();
 
-        let result: boolean[];
-
-        try {
-            result = JSON.parse(text);
-        } 
-        catch (e) {
-            throw new Error(`The response is not a valid JSON! - '${text}'`);
-        }
-
-        if (!Array.isArray(result) || !result.every(v => typeof v === 'boolean')) {
-            throw new Error(`The response is not a boolean array! - '${text}'`);
-        }
-
-        return result;
+        return text;
     }
 }
