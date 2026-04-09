@@ -64,6 +64,7 @@ export abstract class GeminiService {
                         throw new Error('All models are exhausted!');
                     }
 
+                    Utilities.sleep(2000);
                     continue;
                 }
                 default: {
