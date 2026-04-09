@@ -1,8 +1,8 @@
-import { IGeminiSettings } from "../Interfaces/IGeminiSettings";
-import { GeminiService } from "./GeminiService";
+import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
+import { AiStudioServiceBase } from "./AiStudioServiceBase";
 
-export class YoutubeAiService extends GeminiService {
-    constructor(settings: IGeminiSettings) {
+export class YoutubeAiService extends AiStudioServiceBase {
+    constructor(settings: IAiStudioSettings) {
         super(settings);
     }
 

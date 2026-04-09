@@ -1,17 +1,17 @@
-import { IGeminiSettings } from "../Interfaces/IGeminiSettings";
+import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ConverterService } from "./ConverterService";
 import { HttpRequestManager } from "./HttpRequestManager";
 
-export abstract class GeminiService {
+export abstract class AiStudioServiceBase {
     private readonly _apiKey: string;
     private readonly _apiUrl: string;
     private readonly _aiModelPriority: string[];
     private _aiModelPriorityIndex: number = 0;
 
-    constructor(settings: IGeminiSettings) {
+    constructor(settings: IAiStudioSettings) {
         this._apiKey = settings.key;
-        this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiApiUrl, 'string');
+        this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.aiStudioApiUrl, 'string');
         this._aiModelPriority = settings.modelPriority;
     }
 

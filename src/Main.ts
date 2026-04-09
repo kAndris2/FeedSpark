@@ -8,8 +8,8 @@ const configBase = new DriveService().getConfiguration();
 
 function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
-    const geminiService = new YoutubeAiService(configBase.geminiSettings);
-    const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, geminiService);
+    const aiService = new YoutubeAiService(configBase.aiStudioSettings);
+    const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, aiService);
     const summary = rssProcessor.getSummary();
 
     if (summary.channels.length == 0) return;

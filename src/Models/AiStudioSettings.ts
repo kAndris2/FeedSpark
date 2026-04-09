@@ -1,17 +1,17 @@
-import { IGeminiSettings } from "../Interfaces/IGeminiSettings";
+import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { ISelfConstructible } from "../Interfaces/ISelfConstructible";
 
-export class GeminiSettings implements IGeminiSettings, ISelfConstructible<IGeminiSettings> {
+export class AiStudioSettings implements IAiStudioSettings, ISelfConstructible<IAiStudioSettings> {
     key!: string;
     modelPriority!: string[];
 
-    constructor(settings?: IGeminiSettings) {
+    constructor(settings?: IAiStudioSettings) {
         if (!settings) return;
 
         Object.assign(this, settings);
     }
 
-    createDefault(): IGeminiSettings {
+    createDefault(): IAiStudioSettings {
         return {
             key: "",
             modelPriority: []

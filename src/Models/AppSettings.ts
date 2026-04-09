@@ -1,24 +1,24 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
-import { IGeminiSettings } from "../Interfaces/IGeminiSettings";
+import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { ISelfConstructible } from "../Interfaces/ISelfConstructible";
 import { IYoutubeSettings } from "../Interfaces/IYoutubeSettings";
-import { GeminiSettings } from "./GeminiSettings";
+import { AiStudioSettings } from "./AiStudioSettings";
 import { YoutubeSettings } from "./YoutubeSettings";
 
 export class AppSettings implements IAppSettings, ISelfConstructible<IAppSettings> {
-    geminiSettings!: IGeminiSettings;
+    aiStudioSettings!: IAiStudioSettings;
     youtubeSettings!: IYoutubeSettings;
 
     constructor(settings?: IAppSettings) {
         if (!settings) return;
 
-        this.geminiSettings = new GeminiSettings(settings.geminiSettings);
+        this.aiStudioSettings = new AiStudioSettings(settings.aiStudioSettings);
         this.youtubeSettings = new YoutubeSettings(settings.youtubeSettings);
     }
 
     createDefault(): IAppSettings {
         return {
-            geminiSettings: new GeminiSettings().createDefault(),
+            aiStudioSettings: new AiStudioSettings().createDefault(),
             youtubeSettings: new YoutubeSettings().createDefault()
         };
     }

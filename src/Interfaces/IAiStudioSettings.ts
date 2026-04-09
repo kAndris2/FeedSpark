@@ -1,4 +1,4 @@
-export interface IGeminiSettings {
+export interface IAiStudioSettings {
     key: string;
     modelPriority: string[];
 }

@@ -1,7 +1,7 @@
-import { IGeminiSettings } from "./IGeminiSettings";
+import { IAiStudioSettings } from "./IAiStudioSettings";
 import { IYoutubeSettings } from "./IYoutubeSettings";
 
 export interface IAppSettings {
-    geminiSettings: IGeminiSettings;
+    aiStudioSettings: IAiStudioSettings;
     youtubeSettings: IYoutubeSettings;
 }
