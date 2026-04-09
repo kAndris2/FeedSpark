@@ -21,7 +21,6 @@ export class YoutubeAiService extends AiStudioServiceBase {
         `;
         
         const responseText = super.send(prompt);
-
         let result: boolean[];
 
         try {
