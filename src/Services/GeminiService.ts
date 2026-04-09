@@ -6,16 +6,16 @@ import { HttpRequestManager } from "./HttpRequestManager";
 export abstract class GeminiService {
     private readonly _apiKey: string;
     private readonly _apiUrl: string;
-    private readonly _aiModel: string;
+    private readonly _aiModelPriority: string[];
+    private _aiModelPriorityIndex: number = 0;
 
     constructor(settings: IGeminiSettings) {
         this._apiKey = settings.key;
-        this._aiModel = settings.model;
         this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.geminiApiUrl, 'string');
+        this._aiModelPriority = settings.modelPriority;
     }
 
     protected send(prompt: string): any {
-        const url = `${this._apiUrl}/models/${this._aiModel}:generateContent?key=${this._apiKey}`;
         const payload = {
             contents: [{
                 parts: [{ 
@@ -23,13 +23,13 @@ export abstract class GeminiService {
                 }]
             }]
         };
-
         const maxRetries = 3;
         let attempt = 0;
 
         while (true) {
             attempt++;
 
+            const url = `${this._apiUrl}/models/${this._aiModelPriority[this._aiModelPriorityIndex]}:generateContent?key=${this._apiKey}`;
             const response = HttpRequestManager.fetch(url, {
                 method: 'post',
                 contentType: 'application/json',
@@ -40,20 +40,36 @@ export abstract class GeminiService {
             const status = response.getResponseCode();
             const body = response.getContentText();
 
-            if (status !== 503) {
-                const data = JSON.parse(body);
-                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
-                    ?? (() => { throw new Error('Unexpected structure of response!'); })();
-                return text;
-            }
+            switch (status) {
+                case 200: {
+                    const data = JSON.parse(body);
+                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
+                        ?? (() => { throw new Error('Unexpected structure of response!'); })();
+                    return text;
+                }
+                case 503: {
+                    if (attempt < maxRetries) {
+                        const delay = Math.pow(2, attempt - 1) * 1000;
+                        Utilities.sleep(delay);
+                        continue;
+                    }
+                    
+                    throw new Error(`Model unavailable after ${maxRetries} attempts: ${body}`);
+                }
+                case 429: {
+                    this._aiModelPriorityIndex++;
+                    attempt = 0;
+                    
+                    if (this._aiModelPriorityIndex >= this._aiModelPriority.length) {
+                        throw new Error('All models are exhausted!');
+                    }
 
-            if (attempt < maxRetries) {
-                const delay = Math.pow(2, attempt - 1) * 1000;
-                Utilities.sleep(delay);
-                continue;
+                    continue;
+                }
+                default: {
+                    throw new Error(`An unhandled error occured! - Status: ${status} | Body: ${body}`);
+                }
             }
-
-            throw new Error(`Model unavailable after ${maxRetries} attempts: ${body}`);
         }
     }
 }
