@@ -6,15 +6,15 @@ import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
-import { YoutubeChannelProvider } from "./YoutubeChannelProvider";
+import { YoutubeAiService } from "./YoutubeAiService";
 
 export class YoutubeRssProcessor {
-    private readonly _channelProvider: YoutubeChannelProvider;
+    private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
 
-    constructor(config: YoutubeSettings) {
-        this._channelProvider = new YoutubeChannelProvider();
+    constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
+        this._aiService = aiService;
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
             RssNamespaceProvider.find("YouTube")
@@ -23,7 +23,7 @@ export class YoutubeRssProcessor {
     }
 
     public getSummary() : IYoutubeSummary {
-        const channelIds = this._channelProvider.getChannelIds(this._config.ignoredChannelIds);
+        const channelIds = this._getChannelIds();
         const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
         const periodEnd = new Date();
@@ -38,18 +38,37 @@ export class YoutubeRssProcessor {
         };
     }
 
+    private _getChannelIds(): string[] {
+        let channelIds: string[] = [];
+        let pageToken: string | null = null;
+
+        do {
+            const response: any = YouTube?.Subscriptions.list("snippet", {
+                mine: true,
+                maxResults: 50,
+                pageToken: pageToken
+            });
+
+            channelIds = [
+                ...channelIds,
+                ...response.items.map((item: any) => item.snippet.resourceId.channelId)
+            ];
+
+            pageToken = response.nextPageToken ?? null;
+        } while (pageToken);
+
+        const ignoreSet = new Set(this._config.ignoredChannelIds);
+        const filteredIds = channelIds.filter(function(id) {
+            return !ignoreSet.has(id);
+        });
+
+        return filteredIds;
+    }
+
     private _createChannelData(rootEl: XmlElement, periodStart: Date) : IYoutubeChannelData | null {
         const channelId = "UC" + rootEl.getTextFromChildEl("yt:channelId");
         const authorEl = rootEl.getChild("author");
-        const entries = this._rssFeedParser.collectElements(rootEl)
-            .filter(e => {
-                const publishedDate = this._rssFeedParser.getDateFromElement(e);
-                return publishedDate && publishedDate >= periodStart;
-            })
-            .filter(e => {
-                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
-                return !videoUrl.includes("shorts");
-            });
+        const entries = this._getRelevantEntries(rootEl, periodStart);
 
         if (entries.length == 0) return null;
 
@@ -62,6 +81,30 @@ export class YoutubeRssProcessor {
             bannerUrl: channelImgs.bannerUrl,
             videos: entries.map(e => this._createVideoData(e))
         };
+    }
+
+    private _getRelevantEntries(rootEl: XmlElement, periodStart: Date) : XmlElement[] {
+        const entries = this._rssFeedParser.collectElements(rootEl)
+            .filter(e => {
+                const publishedDate = this._rssFeedParser.getDateFromElement(e);
+                return publishedDate && publishedDate >= periodStart;
+            })
+            .filter(e => {
+                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
+                return !videoUrl.includes("shorts");
+            });
+        
+        if (entries.length == 0) return [];
+
+        try {
+            const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
+            const results = this._aiService.classifyMusicTitles(titles);
+
+            return entries.filter((_, i) => results[i] === true);
+        }
+        catch (ex) {
+            return entries;
+        }
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {

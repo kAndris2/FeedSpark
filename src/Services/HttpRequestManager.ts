@@ -7,4 +7,10 @@ export class HttpRequestManager {
 
         return UrlFetchApp.fetchAll(requests);
     }
+
+    public static fetch(url: string, params?: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions) : GoogleAppsScript.URL_Fetch.HTTPResponse {
+        return UrlFetchApp.fetch(url, {
+            ...params
+        });
+    }
 }

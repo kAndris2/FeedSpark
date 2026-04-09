@@ -1,4 +1,6 @@
-export abstract class MailServiceBase {
+export abstract class MailServiceBase<T> {
+    public abstract sendSummary(summary: T) : void;
+
     protected send(htmlTemplate: GoogleAppsScript.HTML.HtmlTemplate, subject: string) : void {
         const htmlOutput = htmlTemplate.evaluate().getContent();
 
