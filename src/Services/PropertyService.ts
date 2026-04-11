@@ -8,15 +8,14 @@ export enum PropertyType {
 
 export class PropertyService {
     public static getUserId() : string {
-        let userId = this.getProperty<string>(UserPropertiesKeyVault.userId, 'string', PropertyType.User);
-        
-        if (!userId) {
-            const uniqueId = Utilities.getUuid();
-            this.setProperty(UserPropertiesKeyVault.userId, uniqueId, PropertyType.User);
-            userId = uniqueId;
+        try {
+            return this.getProperty<string>(UserPropertiesKeyVault.userId, 'string', PropertyType.User);
         }
-
-        return userId;
+        catch (_) {
+            const userId = this._createUserIdHash();
+            this.setProperty(UserPropertiesKeyVault.userId, userId, PropertyType.User);
+            return userId;
+        }
     }
 
     public static getProperty<T>(key: string, type: 'string' | 'number' | 'boolean', propType: PropertyType) : T {
@@ -39,5 +38,14 @@ export class PropertyService {
             case PropertyType.Script: return PropertiesService.getScriptProperties();
             case PropertyType.User: return PropertiesService.getUserProperties();
         }
+    }
+
+    private static _createUserIdHash() : string {
+        const email = Session.getActiveUser().getEmail();
+        const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, email);
+
+        return digest
+            .map(b => (b + 256).toString(16).slice(-2))
+            .join('');
     }
 }
