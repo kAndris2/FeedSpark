@@ -1,9 +1,11 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
 import { AppSettings } from "../Models/AppSettings";
+import { PropertyService } from "./PropertyService";
 
 export class DriveService {
     public getConfiguration() : IAppSettings {
-        const fileName = this._getScriptName() + "_config.json";
+        const userId = PropertyService.getUserId();
+        const fileName = this._getScriptName() + `_config(${userId}).json`;
         const file = this._getLatestConfigFile(fileName);
 
         if (file) {
