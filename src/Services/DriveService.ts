@@ -5,7 +5,8 @@ import { PropertyService } from "./PropertyService";
 export class DriveService {
     public getConfiguration() : IAppSettings {
         const userId = PropertyService.getUserId();
-        const fileName = this._getScriptName() + `_config(${userId}).json`;
+        const scriptName = this._getScriptName();
+        const fileName = scriptName + `_config(${userId}).json`;
         const file = this._getLatestConfigFile(fileName);
 
         if (file) {
@@ -13,7 +14,7 @@ export class DriveService {
             return new AppSettings(primitiveConfig);
         }
 
-        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName);
+        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptName);
         return new AppSettings(defaultPrimitiveConfig);
     }
 
@@ -32,11 +33,24 @@ export class DriveService {
         return latest;
     }
 
-    private _createDefaultPrimitiveConfiguration(fileName: string) : IAppSettings {
+    private _createDefaultPrimitiveConfiguration(fileName: string, scriptName: string) : IAppSettings {
+        const scriptFolder = this._createScriptFolder(`Apps/${scriptName}`);
         const defaultConfig = new AppSettings().createDefault();
-        DriveApp.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
+        scriptFolder.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
 
         return defaultConfig;
+    }
+
+    private _createScriptFolder(path: string) {
+        const parts = path.split('/');
+        let current = DriveApp.getRootFolder();
+
+        parts.forEach(name => {
+            let folders = current.getFoldersByName(name);
+            current = folders.hasNext() ? folders.next() : current.createFolder(name);
+        });
+
+        return current;
     }
 
     private _getScriptName() : string {
