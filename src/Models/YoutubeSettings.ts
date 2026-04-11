@@ -1,7 +1,7 @@
 import { ISelfConstructible } from "../Interfaces/ISelfConstructible";
 import { IYoutubeSettings } from "../Interfaces/IYoutubeSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
-import { ConverterService } from "../Services/ConverterService";
+import { PropertyService, PropertyType } from "../Services/PropertyService";
 
 export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYoutubeSettings> {
     feedUrlTemplate!: string;
@@ -15,8 +15,8 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
         if (!settings) return;
 
         Object.assign(this, settings);
-        this.feedUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, "string");
-        this.channelUrlTemplate = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.youtubeChannelUrlTemplate, "string");
+        this.feedUrlTemplate = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeFeedUrlTemplate, "string", PropertyType.Script);
+        this.channelUrlTemplate = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeChannelUrlTemplate, "string", PropertyType.Script);
     }
 
     createDefault(): IYoutubeSettings {
