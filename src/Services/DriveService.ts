@@ -1,4 +1,5 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { AppSettings } from "../Models/AppSettings";
 import { PropertyService } from "./PropertyService";
 
@@ -15,7 +16,7 @@ export class DriveService {
             return new AppSettings(primitiveConfig);
         }
 
-        const scriptFolder = this._createScriptFolder(`Apps/${scriptName}`);
+        const scriptFolder = this._createScriptFolder(`${ScriptPropertiesKeyVault.appRootFolder}/${scriptName}`);
         const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
         this._moveScriptFileToFolder(scriptFolder, scriptFile);
         return new AppSettings(defaultPrimitiveConfig);
