@@ -1,9 +1,14 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { AppSettings } from "../Models/AppSettings";
+import { PropertyService, PropertyType } from "./PropertyService";
 
 export class DriveService {
     public getConfiguration() : IAppSettings {
-        const fileName = this._getScriptName() + "_config.json";
+        const userId = PropertyService.getUserId();
+        const scriptFile = this._getScriptFile();
+        const scriptName = scriptFile.getName();
+        const fileName = scriptName + `_config(${userId}).json`;
         const file = this._getLatestConfigFile(fileName);
 
         if (file) {
@@ -11,7 +16,11 @@ export class DriveService {
             return new AppSettings(primitiveConfig);
         }
 
-        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName);
+        const rootFolderName = PropertyService.getProperty(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
+        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${scriptName}`);
+        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
+        this._moveScriptFileToFolder(scriptFolder, scriptFile);
+
         return new AppSettings(defaultPrimitiveConfig);
     }
 
@@ -30,18 +39,35 @@ export class DriveService {
         return latest;
     }
 
-    private _createDefaultPrimitiveConfiguration(fileName: string) : IAppSettings {
+    private _createDefaultPrimitiveConfiguration(fileName: string, scriptFolder: GoogleAppsScript.Drive.Folder) : IAppSettings {
         const defaultConfig = new AppSettings().createDefault();
-        DriveApp.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
+        scriptFolder.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
 
         return defaultConfig;
     }
 
-    private _getScriptName() : string {
-        const scriptId = ScriptApp.getScriptId();
+    private _createScriptFolder(path: string) {
+        const parts = path.split('/');
+        let current = DriveApp.getRootFolder();
+
+        parts.forEach(name => {
+            let folders = current.getFoldersByName(name);
+            current = folders.hasNext() ? folders.next() : current.createFolder(name);
+        });
+
+        return current;
+    }
         
-        return DriveApp
-            .getFileById(scriptId)
-            .getName();
+    private _moveScriptFileToFolder(folder: GoogleAppsScript.Drive.Folder, file: GoogleAppsScript.Drive.File) : void {
+        try {
+            file.moveTo(folder);
+        }
+        catch(e) {
+        }
+    }
+
+    private _getScriptFile() : GoogleAppsScript.Drive.File {
+        const scriptId = ScriptApp.getScriptId();
+        return DriveApp.getFileById(scriptId);
     }
 }

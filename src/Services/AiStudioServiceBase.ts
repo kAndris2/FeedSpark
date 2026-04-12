@@ -1,7 +1,7 @@
 import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
-import { ConverterService } from "./ConverterService";
 import { HttpRequestManager } from "./HttpRequestManager";
+import { PropertyService, PropertyType } from "./PropertyService";
 
 export abstract class AiStudioServiceBase {
     private readonly _apiKey: string;
@@ -11,7 +11,7 @@ export abstract class AiStudioServiceBase {
 
     constructor(settings: IAiStudioSettings) {
         this._apiKey = settings.key;
-        this._apiUrl = ConverterService.getConvertedProperty(ScriptPropertiesKeyVault.aiStudioApiUrl, 'string');
+        this._apiUrl = PropertyService.getProperty(ScriptPropertiesKeyVault.aiStudioApiUrl, 'string', PropertyType.Script);
         this._aiModelPriority = settings.modelPriority;
     }
 
