@@ -20,7 +20,7 @@ export class DriveService {
         const scriptFolder = this._createScriptFolder(`${rootFolderName}/${scriptName}`);
         const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
         this._moveScriptFileToFolder(scriptFolder, scriptFile);
-        
+
         return new AppSettings(defaultPrimitiveConfig);
     }
 
@@ -57,11 +57,13 @@ export class DriveService {
 
         return current;
     }
-
         
     private _moveScriptFileToFolder(folder: GoogleAppsScript.Drive.Folder, file: GoogleAppsScript.Drive.File) : void {
-        folder.addFile(file);
-        DriveApp.getRootFolder().removeFile(file);
+        try {
+            file.moveTo(folder);
+        }
+        catch(e) {
+        }
     }
 
     private _getScriptFile() : GoogleAppsScript.Drive.File {
