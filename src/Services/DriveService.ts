@@ -1,7 +1,7 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { AppSettings } from "../Models/AppSettings";
-import { PropertyService } from "./PropertyService";
+import { PropertyService, PropertyType } from "./PropertyService";
 
 export class DriveService {
     public getConfiguration() : IAppSettings {
@@ -16,9 +16,11 @@ export class DriveService {
             return new AppSettings(primitiveConfig);
         }
 
-        const scriptFolder = this._createScriptFolder(`${ScriptPropertiesKeyVault.appRootFolder}/${scriptName}`);
+        const rootFolderName = PropertyService.getProperty(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
+        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${scriptName}`);
         const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
         this._moveScriptFileToFolder(scriptFolder, scriptFile);
+        
         return new AppSettings(defaultPrimitiveConfig);
     }
 
