@@ -14,7 +14,7 @@ export class YoutubeAiService extends AiStudioServiceBase {
 
             TRUE: music (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi, beat tape, official audio/video).
 
-            FALSE: live content (live, livestream, live session, live recording, concert, premiere) or non‑music (vlog, commentary, podcast, tutorial, tech, gaming, reaction, news, review, educational).
+            FALSE: radio shows, radio episodes, live content (live, livestream, live session, concert, premiere) or non‑music (vlog, commentary, podcast, tutorial, tech, gaming, reaction, news, review, educational).
 
             Titles:
             ${JSON.stringify(titles, null, 2)}
