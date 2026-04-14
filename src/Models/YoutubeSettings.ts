@@ -1,5 +1,5 @@
 import { ISelfConstructible } from "../Interfaces/ISelfConstructible";
-import { IYoutubeSettings } from "../Interfaces/IYoutubeSettings";
+import { IYoutubeSettings, IYoutubeTopicSettings } from "../Interfaces/IYoutubeSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { PropertyService, PropertyType } from "../Services/PropertyService";
 
@@ -8,8 +8,7 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
     channelUrlTemplate!: string;
     rssVersion!: string;
     daysToCheck!: number;
-    skipVideoIfContains!: string[];
-    ignoredChannelIds!: string[];
+    topicSettings!: IYoutubeTopicSettings;
     
     constructor(settings?: IYoutubeSettings) {
         if (!settings) return;
@@ -23,8 +22,10 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
         return {
             rssVersion: "Atom",
             daysToCheck: 0,
-            skipVideoIfContains: [],
-            ignoredChannelIds: []
+            topicSettings: {
+                topics: [],
+                prompt: ""
+            }
         };
     }
 }
