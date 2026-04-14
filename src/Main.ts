@@ -17,3 +17,7 @@ function youtubeReaderEntry() {
     const mailService = new YoutubeMailService();
     mailService.sendSummary(summary);
 }
+
+function youtubeTopicSelectorEntry() {
+    const config = configBase.youtubeSettings.topicSettings;
+}
