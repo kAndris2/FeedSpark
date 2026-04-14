@@ -6,6 +6,15 @@ export class YoutubeAiService extends AiStudioServiceBase {
         super(settings);
     }
 
+    public classifyChannels(prompt: string, channelNames: string[]) : boolean[] {
+        const extendedPrompt = prompt + `
+            Channels:
+            ${JSON.stringify(channelNames, null, 2)}
+        `;
+
+        return this._ask(extendedPrompt, channelNames.length);
+    }
+
     public classifyMusicTitles(titles: string[]) : boolean[] {
         const prompt = `
             Classify YouTube titles.
@@ -20,6 +29,10 @@ export class YoutubeAiService extends AiStudioServiceBase {
             ${JSON.stringify(titles, null, 2)}
         `;
         
+        return this._ask(prompt, titles.length);
+    }
+
+    private _ask(prompt: string, itemCount: number) : boolean[] {
         const responseText = super.send(prompt);
         let result: boolean[];
 
@@ -34,8 +47,8 @@ export class YoutubeAiService extends AiStudioServiceBase {
             throw new Error(`The response is not a boolean array! - '${responseText}'`);
         }
 
-        if (result.length !== titles.length) {
-            throw new Error(`The length of the response (${result.length}) does not match the number of titles (${titles.length}).`);
+        if (result.length !== itemCount) {
+            throw new Error(`The length of the response (${result.length}) does not match the number of items (${itemCount}).`);
         }
 
         return result;

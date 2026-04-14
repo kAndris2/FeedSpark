@@ -1,8 +1,23 @@
 import { IYoutubeChannel } from "../Interfaces/IYoutubeChannel";
+import { IYoutubeTopicSettings } from "../Interfaces/IYoutubeSettings";
+import { YoutubeAiService } from "./YoutubeAiService";
+import { YoutubeDriveService } from "./YoutubeDriveService";
 
 export class YoutubeChannelClassifier {
+    private readonly _settings: IYoutubeTopicSettings;
+    private readonly _aiService:  YoutubeAiService;
+    private readonly _driveService: YoutubeDriveService;
+
+    constructor(settings: IYoutubeTopicSettings, aiService: YoutubeAiService) {
+        this._settings = settings;
+        this._aiService = aiService;
+        this._driveService = new YoutubeDriveService();
+    }
+
     public classifyChannels() : void {
         const subscribedChannels = this._getSubscribedChannels();
+        const classifiedChannels = this._driveService.getClassifiedChannelList();
+        const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannels.some(classifiedChannel => classifiedChannel.id === subscribedChannel.id));
     }
 
     private _getSubscribedChannels(): IYoutubeChannel[] {

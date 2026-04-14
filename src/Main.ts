@@ -1,6 +1,7 @@
 import { YoutubeSettings } from "./Models/YoutubeSettings";
 import { DriveService } from "./Services/DriveService";
 import { YoutubeAiService } from "./Services/YoutubeAiService";
+import { YoutubeChannelClassifier } from "./Services/YoutubeChannelClassifier";
 import { YoutubeMailService } from "./Services/YoutubeMailService";
 import { YoutubeRssProcessor } from "./Services/YoutubeRssProcessor";
 
@@ -20,4 +21,8 @@ function youtubeReaderEntry() {
 
 function youtubeTopicSelectorEntry() {
     const config = configBase.youtubeSettings.topicSettings;
+    const aiService = new YoutubeAiService(configBase.aiStudioSettings);
+    const channelClassifier = new YoutubeChannelClassifier(config, aiService);
+
+    channelClassifier.classifyChannels();
 }
