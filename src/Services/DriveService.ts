@@ -13,8 +13,7 @@ export class DriveService extends DriveServiceBase {
     }
 
     public getConfiguration() : IAppSettings {
-        const userId = PropertyService.getUserId();
-        const fileName = this._scriptFile.getName() + `_config(${userId}).json`;
+        const fileName = this.createFileName("config", "json");
         const config = this.get<IAppSettings>(fileName);
 
         if (config) {
@@ -29,10 +28,21 @@ export class DriveService extends DriveServiceBase {
 
     protected organizeScript() : GoogleAppsScript.Drive.Folder {
         const rootFolderName = PropertyService.getProperty<string>(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
-        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._scriptFile.getName()}`);
+        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._getScriptName}`);
         this._moveScriptFileToFolder(scriptFolder);
 
         return scriptFolder;
+    }
+
+    protected createFileName(name: string, extension: string) : string {
+        const scriptName = this._getScriptName();
+        const userId = PropertyService.getUserId();
+
+        return `${scriptName}_${name}(${userId}).${extension}`;
+    }
+
+    private _getScriptName() : string {
+        return this._scriptFile.getName();
     }
 
     private _createDefaultPrimitiveConfiguration(fileName: string, scriptFolder: GoogleAppsScript.Drive.Folder) : IAppSettings {

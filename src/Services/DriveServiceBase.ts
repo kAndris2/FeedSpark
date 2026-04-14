@@ -1,11 +1,11 @@
 export abstract class DriveServiceBase {
     protected get<T>(fileName: string) : T | null {
-        const file = this._getLatestConfigFile(fileName);
+        const file = this.getLatestConfigFile(fileName);
 
         return file ? JSON.parse(file.getBlob().getDataAsString()) as T : null;
     }
 
-    private _getLatestConfigFile(fileName: string) : GoogleAppsScript.Drive.File | null {
+    protected getLatestConfigFile(fileName: string) : GoogleAppsScript.Drive.File | null {
         const files = DriveApp.getFilesByName(fileName);
         let latest: GoogleAppsScript.Drive.File | null = null;
 
