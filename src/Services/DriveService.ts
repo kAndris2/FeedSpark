@@ -1,42 +1,38 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { AppSettings } from "../Models/AppSettings";
+import { DriveServiceBase } from "./DriveServiceBase";
 import { PropertyService, PropertyType } from "./PropertyService";
 
-export class DriveService {
+export class DriveService extends DriveServiceBase {
+    private readonly _scriptFile: GoogleAppsScript.Drive.File;
+
+    constructor() {
+        super();
+        this._scriptFile = this._getScriptFile();
+    }
+
     public getConfiguration() : IAppSettings {
         const userId = PropertyService.getUserId();
-        const scriptFile = this._getScriptFile();
-        const scriptName = scriptFile.getName();
-        const fileName = scriptName + `_config(${userId}).json`;
-        const file = this._getLatestConfigFile(fileName);
+        const fileName = this._scriptFile.getName() + `_config(${userId}).json`;
+        const config = this.get<IAppSettings>(fileName);
 
-        if (file) {
-            const primitiveConfig = JSON.parse(file.getBlob().getDataAsString()) as IAppSettings;
-            return new AppSettings(primitiveConfig);
+        if (config) {
+            return new AppSettings(config);
         }
 
-        const rootFolderName = PropertyService.getProperty(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
-        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${scriptName}`);
+        const scriptFolder = this.organizeScript();
         const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
-        this._moveScriptFileToFolder(scriptFolder, scriptFile);
 
         return new AppSettings(defaultPrimitiveConfig);
     }
 
-    private _getLatestConfigFile(fileName: string) : GoogleAppsScript.Drive.File | null {
-        const files = DriveApp.getFilesByName(fileName);
-        let latest: GoogleAppsScript.Drive.File | null = null;
+    protected organizeScript() : GoogleAppsScript.Drive.Folder {
+        const rootFolderName = PropertyService.getProperty<string>(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
+        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._scriptFile.getName()}`);
+        this._moveScriptFileToFolder(scriptFolder);
 
-        while (files.hasNext()) { 
-            const file = files.next();
-
-            if (!latest || file.getLastUpdated() > latest.getLastUpdated()) {
-                latest = file;
-            }
-        }
-
-        return latest;
+        return scriptFolder;
     }
 
     private _createDefaultPrimitiveConfiguration(fileName: string, scriptFolder: GoogleAppsScript.Drive.Folder) : IAppSettings {
@@ -58,9 +54,9 @@ export class DriveService {
         return current;
     }
         
-    private _moveScriptFileToFolder(folder: GoogleAppsScript.Drive.Folder, file: GoogleAppsScript.Drive.File) : void {
+    private _moveScriptFileToFolder(folder: GoogleAppsScript.Drive.Folder) : void {
         try {
-            file.moveTo(folder);
+            this._scriptFile.moveTo(folder);
         }
         catch(e) {
         }
