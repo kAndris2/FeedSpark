@@ -18,12 +18,6 @@ export class YoutubeDriveService extends DriveService {
 
     public updateClassifiedChannelList(classifiedChannels: IClassifiedYoutubeChannel[]) : void {
         const fileName = super.createFileName(this._classifiedChannelsFilename, "json");
-        const file = super.getLatestConfigFile(fileName);
-
-        if (!file) {
-            throw new Error(`The requested file does not exist! - ${fileName}`);
-        }
-
-        file.setContent(JSON.stringify(classifiedChannels, null, 2));
+        super.setFileContent(fileName, classifiedChannels);
     }
 }
