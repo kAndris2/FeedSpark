@@ -19,20 +19,28 @@ export class YoutubeChannelClassifier {
         const subscribedChannels = this._getSubscribedChannels();
         const classifiedChannelDatabase = this._driveService.getClassifiedChannelDataBase();
         this._removeUnsubscribedChannels(classifiedChannelDatabase, subscribedChannels.map(c => c.id));
-        
-        const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
 
         const requiredTopics = this._settings.topics.map(t => t.name);
         const registeredTopics = classifiedChannelDatabase.getTopics();
-        const allRegistered = requiredTopics.every(function(requiredTopic) {
+        const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
             return registeredTopics.indexOf(requiredTopic) !== -1;
         });
+        const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
 
-        if (!allRegistered) {
-            /* const missingTopics = requiredTopics.filter(function(requiredTopic) {
-                return registeredTopics.indexOf(requiredTopic) === -1;
-            }); */
+        if (!allTopicsRegistered) {
+            this._reRegisterChannels();
+            return;
         }
+
+        this._registerNewChannels(relevantYoutubeChannels, requiredTopics);
+    }
+
+    private _registerNewChannels(newChannels: IYoutubeChannel[], topics: string[]) : void {
+
+    }
+
+    private _reRegisterChannels() : void {
+
     }
 
     private _removeUnsubscribedChannels(db: ClassifiedYoutubeChannelDatabase, subscribedChannelIds: string[]) : void {
