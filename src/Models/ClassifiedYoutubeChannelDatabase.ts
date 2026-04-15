@@ -20,12 +20,28 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         this[channelId].topics = info.topics.slice();
     }
 
+    public removeChannel(channelId: string) : void {
+        delete this[channelId];
+    }
+
     public has(channelId: string) : boolean {
         return this[channelId] !== undefined;
     }
 
     public get(channelId: string) : IClassifiedYoutubeChannelInfo {
         return this[channelId];
+    }
+
+    public getChannelIds(): string[] {
+        const ids: string[] = [];
+
+        for (const channelId in this) {
+            if (Object.prototype.hasOwnProperty.call(this, channelId)) {
+                ids.push(channelId);
+            }
+        }
+
+        return ids;
     }
 
     public getTopics() : string[] {
