@@ -16,6 +16,17 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         };
     }
 
+    public addRange(db: IClassifiedYoutubeChannelDatabase): void {
+        for (const channelId in db) {
+            if (!Object.prototype.hasOwnProperty.call(db, channelId)) continue;
+
+            const info = db[channelId];
+            if (!info) continue;
+
+            this.addChannel(channelId, info);
+        }
+    }
+
     public updateChannel(channelId: string, info: IClassifiedYoutubeChannelInfo) : void {
         this[channelId].topics = info.topics.slice();
     }

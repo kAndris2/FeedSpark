@@ -32,11 +32,28 @@ export class YoutubeChannelClassifier {
         */
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
-        this._registerNewChannels(relevantYoutubeChannels, requiredTopics);
+        this._registerNewChannels(classifiedChannelDatabase, relevantYoutubeChannels, requiredTopics);
     }
 
-    private _registerNewChannels(newChannels: IYoutubeChannel[], topics: string[]) : void {
-        
+    private _registerNewChannels(db: ClassifiedYoutubeChannelDatabase, newChannels: IYoutubeChannel[], topics: string[]) : void {
+        const batchSize = 30;
+
+        for (let i = 0; i < newChannels.length; i += batchSize) {
+            const batch = newChannels.slice(i, i + batchSize);
+
+            try {
+                const result = this._aiService.classifyChannels(
+                    this._settings.prompt,
+                    batch.map(c => c.name),
+                    topics
+                );
+
+                db.addRange(result);
+            }
+            catch (_) {
+                continue;
+            }
+        }
     }
 
     private _reRegisterChannels(channels: IYoutubeChannel[], topics: string[]) : void {
