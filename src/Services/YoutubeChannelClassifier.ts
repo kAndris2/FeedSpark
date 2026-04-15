@@ -16,8 +16,8 @@ export class YoutubeChannelClassifier {
 
     public classifyChannels() : void {
         const subscribedChannels = this._getSubscribedChannels();
-        const classifiedChannels = this._driveService.getClassifiedChannelList();
-        const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannels.some(classifiedChannel => classifiedChannel.id === subscribedChannel.id));
+        const classifiedChannelDatabase = this._driveService.getClassifiedChannelDataBase();
+        const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
     }
 
     private _getSubscribedChannels(): IYoutubeChannel[] {
