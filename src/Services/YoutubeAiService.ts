@@ -10,27 +10,44 @@ export class YoutubeAiService extends AiStudioServiceBase {
     }
 
     public classifyChannels(prompt: string, channels: string[], topics: string[]) : IClassifiedYoutubeChannelDatabase {
-        const extendedPrompt = prompt + `
-            Channels:
-            ${JSON.stringify(channels, null, 2)}
-            Topics:
-            ${JSON.stringify(topics, null, 2)}
-        `;
+        const batchSize = 30;
+        const dbs: IClassifiedYoutubeChannelDatabase[] = []; 
 
-        const responseText = super.send(extendedPrompt);
-        const out: { value?: IClassifiedYoutubeChannelDatabase } = {};
+        for (let i = 0; i < channels.length; i += batchSize) {
+            const channelBatch = channels.slice(i, i + batchSize);
 
-        if (!ConverterService.tryParseJson<IClassifiedYoutubeChannelDatabase>(responseText, out)) {
-            throw new Error(`The response is not a valid JSON! - '${responseText}'`);
+            try {
+                const extendedPrompt = prompt + `
+                    Channels:
+                    ${JSON.stringify(channelBatch, null, 2)}
+                    Topics:
+                    ${JSON.stringify(topics, null, 2)}
+                `;
+
+                const responseText = super.send(extendedPrompt);
+                const out: { value?: IClassifiedYoutubeChannelDatabase } = {};
+
+                if (!ConverterService.tryParseJson<IClassifiedYoutubeChannelDatabase>(responseText, out)) {
+                    throw new Error(`The response is not a valid JSON! - '${responseText}'`);
+                }
+
+                const result = new ClassifiedYoutubeChannelDatabase(out.value as IClassifiedYoutubeChannelDatabase);
+
+                if (result.count() !== channelBatch.length) {
+                    throw new Error(`The length of the response (${result.count()}) does not match the number of items (${channelBatch.length}).`);
+                }
+
+                dbs.push(result);
+            }
+            catch (_) {
+                continue;
+            }
         }
 
-        const result = new ClassifiedYoutubeChannelDatabase(out.value as IClassifiedYoutubeChannelDatabase);
+        const mergedDb = new ClassifiedYoutubeChannelDatabase(null);
+        dbs.forEach(db => mergedDb.addRange(db));
 
-        if (result.count() !== channels.length) {
-            throw new Error(`The length of the response (${result.count()}) does not match the number of items (${channels.length}).`);
-        }
-
-        return result;
+        return mergedDb;
     }
 
     public classifyMusicTitles(titles: string[]) : boolean[] {
