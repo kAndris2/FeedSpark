@@ -32,6 +32,10 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         return this[channelId];
     }
 
+    public count() : number {
+        return Object.keys(this).length;
+    }
+
     public getChannelIds(): string[] {
         const ids: string[] = [];
 

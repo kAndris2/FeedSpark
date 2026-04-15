@@ -23,19 +23,20 @@ export class YoutubeChannelClassifier {
         
         /* const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
             return registeredTopics.indexOf(requiredTopic) !== -1;
-        }); */
+        });
 
         if (!allTopicsRegistered) {
             this._reRegisterChannels(subscribedChannels, requiredTopics);
             return;
         }
+        */
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
         this._registerNewChannels(relevantYoutubeChannels, requiredTopics);
     }
 
     private _registerNewChannels(newChannels: IYoutubeChannel[], topics: string[]) : void {
-
+        
     }
 
     private _reRegisterChannels(channels: IYoutubeChannel[], topics: string[]) : void {
