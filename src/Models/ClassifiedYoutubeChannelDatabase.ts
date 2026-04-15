@@ -62,4 +62,42 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
         return Object.keys(unique);
     }
+
+    public normalize(subscribedChannelIds: string[], requiredTopics: string[]) : void {
+        this._removeUnsubscribedChannels(subscribedChannelIds);
+        this._removeUnusedTopicsFromChannels(requiredTopics);
+    }
+
+    private _removeUnsubscribedChannels(subscribedChannelIds: string[]) : void {
+        this.getChannelIds()
+            .filter(classifiedChannelId => !subscribedChannelIds.some(subscribedChannelId => subscribedChannelId === classifiedChannelId))
+            .forEach(channelId => this.removeChannel(channelId));
+    }
+
+    private _removeUnusedTopicsFromChannels(requiredTopics: string[]) : void {
+        const registeredTopics = this.getTopics();
+        const unusedTopics = registeredTopics.filter(function(registeredTopic) {
+            return requiredTopics.indexOf(registeredTopic) === -1;
+        });
+
+        if (unusedTopics.length == 0) return;
+
+        for (const channelId in this) {
+           if (!Object.prototype.hasOwnProperty.call(this, channelId)) continue;
+
+           const info = this[channelId] as IClassifiedYoutubeChannelInfo;
+
+            for (const unusedTopic of unusedTopics) {
+                const matchIndex = info.topics.indexOf(unusedTopic);
+
+                if (matchIndex === -1) continue;
+
+                info.topics.splice(matchIndex, 1);
+            }
+
+            if (info.topics.length === 0) {
+                this.removeChannel(channelId);
+            }
+        }
+    }
 }

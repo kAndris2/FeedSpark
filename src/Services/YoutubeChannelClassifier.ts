@@ -18,10 +18,9 @@ export class YoutubeChannelClassifier {
     public classifyChannels() : void {
         const subscribedChannels = this._getSubscribedChannels();
         const classifiedChannelDatabase = this._driveService.getClassifiedChannelDataBase();
-        this._removeUnsubscribedChannels(classifiedChannelDatabase, subscribedChannels.map(c => c.id));
-
         const requiredTopics = this._settings.topics.map(t => t.name);
-        const registeredTopics = classifiedChannelDatabase.getTopics();
+        classifiedChannelDatabase.normalize(subscribedChannels.map(c => c.id), requiredTopics);
+        
         const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
             return registeredTopics.indexOf(requiredTopic) !== -1;
         });
@@ -41,12 +40,6 @@ export class YoutubeChannelClassifier {
 
     private _reRegisterChannels() : void {
 
-    }
-
-    private _removeUnsubscribedChannels(db: ClassifiedYoutubeChannelDatabase, subscribedChannelIds: string[]) : void {
-        db.getChannelIds()
-            .filter(classifiedChannelId => !subscribedChannelIds.some(subscribedChannelId => subscribedChannelId === classifiedChannelId))
-            .forEach(channelId => db.removeChannel(channelId));
     }
 
     private _getSubscribedChannels(): IYoutubeChannel[] {
