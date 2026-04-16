@@ -36,6 +36,12 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         return Object.keys(this).length;
     }
 
+    public reset(): void {
+        for (const channelId of this.getChannelIds()) {
+            delete this[channelId];
+        }
+    }
+
     public getChannelIds(): string[] {
         const ids: string[] = [];
 

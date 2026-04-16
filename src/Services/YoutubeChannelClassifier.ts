@@ -21,15 +21,15 @@ export class YoutubeChannelClassifier {
         const requiredTopics = this._settings.topics.map(t => t.name);
         classifiedChannelDatabase.normalize(subscribedChannels.map(c => c.id), requiredTopics);
         
-        /* const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
+        const registeredTopics = classifiedChannelDatabase.getTopics();
+        const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
             return registeredTopics.indexOf(requiredTopic) !== -1;
         });
 
         if (!allTopicsRegistered) {
-            this._reRegisterChannels(subscribedChannels, requiredTopics);
+            this._reRegisterChannels(classifiedChannelDatabase, subscribedChannels, requiredTopics);
             return;
         }
-        */
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
         this._registerNewChannels(classifiedChannelDatabase, relevantYoutubeChannels, requiredTopics);
@@ -41,8 +41,10 @@ export class YoutubeChannelClassifier {
         this._driveService.updateClassifiedChannelList(db);
     }
 
-    private _reRegisterChannels(channels: IYoutubeChannel[], topics: string[]) : void {
-
+    private _reRegisterChannels(db: ClassifiedYoutubeChannelDatabase, channels: IYoutubeChannel[], topics: string[]) : void {
+        db.reset();
+        this._driveService.updateClassifiedChannelList(db);
+        this._registerNewChannels(db, channels, topics);
     }
 
     private _getSubscribedChannels(): IYoutubeChannel[] {
