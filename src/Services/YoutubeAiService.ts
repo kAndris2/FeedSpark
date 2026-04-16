@@ -32,9 +32,10 @@ export class YoutubeAiService extends AiStudioServiceBase {
                 }
 
                 const result = new ClassifiedYoutubeChannelDatabase(out.value as IClassifiedYoutubeChannelDatabase);
+                const count = result.count();
 
-                if (result.count() !== channelBatch.length) {
-                    throw new Error(`The length of the response (${result.count()}) does not match the number of items (${channelBatch.length}).`);
+                if (count !== channelBatch.length) {
+                    throw new Error(`The length of the response (${count}) does not match the number of items (${channelBatch.length}).`);
                 }
 
                 dbs.push(result);

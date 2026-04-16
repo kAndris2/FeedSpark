@@ -24,10 +24,6 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         }
     }
 
-    public removeChannel(channelId: string) : void {
-        delete this[channelId];
-    }
-
     public has(channelId: string) : boolean {
         return this[channelId] !== undefined;
     }
@@ -38,7 +34,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
     public reset(): void {
         for (const channelId of this.getChannelIds()) {
-            this.removeChannel(channelId);
+            this._removeChannel(channelId);
         }
     }
 
@@ -81,7 +77,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
     private _removeUnsubscribedChannels(subscribedChannelIds: string[]) : void {
         this.getChannelIds()
             .filter(classifiedChannelId => !subscribedChannelIds.some(subscribedChannelId => subscribedChannelId === classifiedChannelId))
-            .forEach(channelId => this.removeChannel(channelId));
+            .forEach(channelId => this._removeChannel(channelId));
     }
 
     private _removeUnusedTopicsFromChannels(requiredTopics: string[]) : void {
@@ -106,8 +102,12 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
             }
 
             if (info.topics.length === 0) {
-                this.removeChannel(channelId);
+                this._removeChannel(channelId);
             }
         }
+    }
+
+    private _removeChannel(channelId: string) : void {
+        delete this[channelId];
     }
 }
