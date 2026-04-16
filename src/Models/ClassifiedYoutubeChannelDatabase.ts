@@ -50,23 +50,20 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         return ids;
     }
 
-    public getTopics() : string[] {
-        const unique: { [topic: string]: boolean } = {};
+    public getTopics(): string[] {
+        const topics = new Set<string>();
 
-        for (const channelId in this) {
-            if (Object.prototype.hasOwnProperty.call(this, channelId)) {
-                const info = this[channelId];
+        for (const channelId of this.getChannelIds()) {
+            const info = this[channelId] as IClassifiedYoutubeChannelInfo;
 
-                if (info && info.topics && info.topics.length > 0) {
-                    for (let i = 0; i < info.topics.length; i++) {
-                        const topic = info.topics[i];
-                        unique[topic] = true;
-                    }
-                }
+            if (!info?.topics) continue;
+
+            for (const topic of info.topics) {
+                topics.add(topic);
             }
         }
 
-        return Object.keys(unique);
+        return Array.from(topics);
     }
 
     public normalize(subscribedChannelIds: string[], requiredTopics: string[]) : void {
