@@ -38,7 +38,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
     public reset(): void {
         for (const channelId of this.getChannelIds()) {
-            delete this[channelId];
+            this.removeChannel(channelId);
         }
     }
 
