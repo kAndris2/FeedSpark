@@ -39,15 +39,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
     }
 
     public getChannelIds(): string[] {
-        const ids: string[] = [];
-
-        for (const channelId in this) {
-            if (Object.prototype.hasOwnProperty.call(this, channelId)) {
-                ids.push(channelId);
-            }
-        }
-
-        return ids;
+        return Object.keys(this);
     }
 
     public getTopics(): string[] {
@@ -85,9 +77,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
         if (unusedTopics.length == 0) return;
 
-        for (const channelId in this) {
-           if (!Object.prototype.hasOwnProperty.call(this, channelId)) continue;
-
+        for (const channelId in this.getChannelIds()) {
            const info = this[channelId] as IClassifiedYoutubeChannelInfo;
 
             for (const unusedTopic of unusedTopics) {
