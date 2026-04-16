@@ -10,25 +10,18 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         Object.assign(this, db);
     }
 
-    public addChannel(channelId: string, info: IClassifiedYoutubeChannelInfo) : void {
-        this[channelId] = {
-            topics: info.topics.slice()
-        };
-    }
-
     public addRange(db: IClassifiedYoutubeChannelDatabase): void {
         for (const channelId in db) {
             if (!Object.prototype.hasOwnProperty.call(db, channelId)) continue;
 
             const info = db[channelId];
-            if (!info) continue;
 
-            this.addChannel(channelId, info);
+            if (!info || info.topics.length == 0) continue;
+
+            this[channelId] = {
+                topics: info.topics.slice()
+            };
         }
-    }
-
-    public updateChannel(channelId: string, info: IClassifiedYoutubeChannelInfo) : void {
-        this[channelId].topics = info.topics.slice();
     }
 
     public removeChannel(channelId: string) : void {
@@ -37,10 +30,6 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
     public has(channelId: string) : boolean {
         return this[channelId] !== undefined;
-    }
-
-    public get(channelId: string) : IClassifiedYoutubeChannelInfo {
-        return this[channelId];
     }
 
     public count() : number {
