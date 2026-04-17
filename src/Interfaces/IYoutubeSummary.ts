@@ -2,6 +2,7 @@ export interface IYoutubeSummary {
     channels: IYoutubeChannelData[];
     periodStartStr: string;
     periodEndStr: string;
+    topic: string;
 }
 
 export interface IYoutubeVideoData {

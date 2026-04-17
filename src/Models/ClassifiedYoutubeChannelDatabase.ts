@@ -10,6 +10,20 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         Object.assign(this, db);
     }
 
+    public getChannelIdsByTopic(topic: string) : string[] {
+        const relevantIds: string[] = [];
+
+        for (const channelId of this.getChannelIds()) {
+            const info = this[channelId] as IClassifiedYoutubeChannelInfo;
+
+            if (!info.topics.some(t => t === topic)) continue;
+
+            relevantIds.push(channelId);
+        }
+
+        return relevantIds;
+    }
+
     public addRange(db: IClassifiedYoutubeChannelDatabase): void {
         for (const channelId in db) {
             if (!Object.prototype.hasOwnProperty.call(db, channelId)) continue;
@@ -77,7 +91,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
 
         if (unusedTopics.length == 0) return;
 
-        for (const channelId in this.getChannelIds()) {
+        for (const channelId of this.getChannelIds()) {
            const info = this[channelId] as IClassifiedYoutubeChannelInfo;
 
             for (const unusedTopic of unusedTopics) {

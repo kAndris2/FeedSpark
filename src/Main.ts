@@ -11,12 +11,10 @@ function youtubeReaderEntry() {
     const config = configBase.youtubeSettings;
     const aiService = new YoutubeAiService(configBase.aiStudioSettings);
     const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, aiService);
-    const summary = rssProcessor.getSummary();
-
-    if (summary.channels.length == 0) return;
+    const summaries = rssProcessor.getSummaries();
 
     const mailService = new YoutubeMailService();
-    mailService.sendSummary(summary);
+    mailService.sendSummary(summaries);
 }
 
 function youtubeTopicSelectorEntry() {
