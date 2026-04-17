@@ -51,21 +51,13 @@ export class YoutubeAiService extends AiStudioServiceBase {
         return mergedDb;
     }
 
-    public classifyMusicTitles(titles: string[]) : boolean[] {
-        const prompt = `
-            Classify YouTube titles.
-
-            Output: JSON boolean array in same order.
-
-            TRUE: music (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi, beat tape, official audio/video).
-
-            FALSE: radio shows, radio episodes, live content (live, livestream, live session, concert, premiere) or non‑music (vlog, commentary, podcast, tutorial, tech, gaming, reaction, news, review, educational).
-
+    public classifyMusicTitles(prompt: string, titles: string[]) : boolean[] {
+        const extendedPrompt = prompt + `
             Titles:
             ${JSON.stringify(titles, null, 2)}
         `;
         
-        const responseText = super.send(prompt);
+        const responseText = super.send(extendedPrompt);
         const out: { value?: boolean[] } = {};
 
         if (!ConverterService.tryParseJson<boolean[]>(responseText, out)) {

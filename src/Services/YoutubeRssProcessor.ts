@@ -87,17 +87,22 @@ export class YoutubeRssProcessor {
                 });
             });
         
-        if (entries.length == 0) return [];
-
-        try {
-            const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
-            const results = this._aiService.classifyMusicTitles(titles);
-
-            return entries.filter((_, i) => results[i] === true);
+        if (entries.length == 0) {
+            return [];
         }
-        catch (ex) {
-            return entries;
+        else if (topic.aiFilter && topic.prompt) {
+            try {
+                const titles = entries.map(e => this._rssFeedParser.getTitleFromElement(e));
+                const results = this._aiService.classifyMusicTitles(topic.prompt, titles);
+
+                return entries.filter((_, i) => results[i] === true);
+            }
+            catch (ex) {
+                return entries;
+            }
         }
+
+        return entries;
     }
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
