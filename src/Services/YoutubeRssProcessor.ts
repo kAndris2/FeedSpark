@@ -95,18 +95,12 @@ export class YoutubeRssProcessor {
             const shorts = this._collectShortElements(entries);
             const shortIds = shorts.map(s => s.id);
 
+            entries = entries
+                .filter(e => !shortIds.some(id => id === e.id))
+                .filter(e => !this._hasBannedWord(e, topic.skipIfContains));
+
             if (topic.needShorts) {
-                entries = [
-                    ...entries
-                        .filter(e => !shortIds.some(id => id === e.id))
-                        .filter(e => !this._hasBannedWord(e, topic.skipIfContains)), 
-                    ...shorts
-                ];
-            }
-            else {
-                entries = entries
-                    .filter(e => !shortIds.some(id => id === e.id))
-                    .filter(e => !this._hasBannedWord(e, topic.skipIfContains));
+                entries = [...entries, ...shorts];
             }
         }
         
