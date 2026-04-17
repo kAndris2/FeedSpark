@@ -22,13 +22,16 @@ export class YoutubeChannelClassifier {
         classifiedChannelDatabase.normalize(subscribedChannels.map(c => c.id), requiredTopics);
         
         const registeredTopics = classifiedChannelDatabase.getTopics();
-        const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
-            return registeredTopics.indexOf(requiredTopic) !== -1;
-        });
 
-        if (!allTopicsRegistered) {
-            this._reRegisterChannels(classifiedChannelDatabase, subscribedChannels, requiredTopics);
-            return;
+        if (registeredTopics.length >= 1) {
+            const allTopicsRegistered = requiredTopics.every(function(requiredTopic) {
+                return registeredTopics.indexOf(requiredTopic) !== -1;
+            });
+
+            if (!allTopicsRegistered) {
+                this._reRegisterChannels(classifiedChannelDatabase, subscribedChannels, requiredTopics);
+                return;
+            }
         }
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
