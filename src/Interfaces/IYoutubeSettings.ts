@@ -11,6 +11,7 @@ export interface IYoutubeTopicSettings {
 
 export interface IYoutubeTopic {
     name: string;
+    needShorts: boolean;
     aiFilter: boolean;
     prompt: string;
     skipIfContains: string[];

@@ -70,24 +70,45 @@ export class YoutubeRssProcessor {
         };
     }
 
+    private _collectShortElements(entries: XmlElement[]) : XmlElement[] {
+        return entries.filter(e => {
+            const videoUrl = this._rssFeedParser.getLinkFromElement(e).toLowerCase();
+            return videoUrl.includes("shorts");
+        });
+    }
+
+    private _hasBannedWord(entry: XmlElement, bannedWords: string[]) : boolean {
+        bannedWords = bannedWords ?? [];
+        const title = this._rssFeedParser.getTitleFromElement(entry).toLowerCase();
+
+        return bannedWords.some(word => title.includes(word));
+    }
+
     private _getRelevantEntries(rootEl: XmlElement, periodStart: Date, topic: IYoutubeTopic) : XmlElement[] {
-        const entries = this._rssFeedParser.collectElements(rootEl)
+        let entries = this._rssFeedParser.collectElements(rootEl)
             .filter(e => {
                 const publishedDate = this._rssFeedParser.getDateFromElement(e);
                 return publishedDate && publishedDate >= periodStart;
-            })
-            .filter(e => {
-                const videoUrl = this._rssFeedParser.getLinkFromElement(e);
-                return !videoUrl.includes("shorts");
-            })
-            .filter(e => {
-                const title = this._rssFeedParser.getTitleFromElement(e).toLowerCase();
-                const bannedWords = topic.skipIfContains ?? [];
-
-                return !bannedWords.some(word => {
-                    return new RegExp(`\\b${word.toLowerCase()}\\b`).test(title);
-                });
             });
+        
+        if (entries.length >= 1) {
+            const shorts = this._collectShortElements(entries);
+            const shortIds = shorts.map(s => s.id);
+
+            if (topic.needShorts) {
+                entries = [
+                    ...entries
+                        .filter(e => !shortIds.some(id => id === e.id))
+                        .filter(e => !this._hasBannedWord(e, topic.skipIfContains)), 
+                    ...shorts
+                ];
+            }
+            else {
+                entries = entries
+                    .filter(e => !shortIds.some(id => id === e.id))
+                    .filter(e => !this._hasBannedWord(e, topic.skipIfContains));
+            }
+        }
         
         if (entries.length == 0) {
             return [];

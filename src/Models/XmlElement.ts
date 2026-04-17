@@ -2,10 +2,12 @@ import { INamespace } from "../Interfaces/INamespace";
 import { XmlElementInfo } from "../Interfaces/XmlElementInfo";
 
 export class XmlElement {
+    public readonly id: string;
     private readonly _element: GoogleAppsScript.XML_Service.Element;
     private readonly _namespaces: INamespace[];
 
     constructor(element: GoogleAppsScript.XML_Service.Element, namespaces: INamespace[]) {
+        this.id = Utilities.getUuid();
         this._element = element;
         this._namespaces = namespaces;
     }
