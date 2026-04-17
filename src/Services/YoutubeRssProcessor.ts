@@ -1,4 +1,5 @@
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
+import { IYoutubeTopic } from "../Interfaces/IYoutubeSettings";
 import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
@@ -28,33 +29,33 @@ export class YoutubeRssProcessor {
         const periodEnd = new Date();
         const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
 
-        const topics = this._config.topicSettings.topics.map(topic => topic.name);
         const driveService = new YoutubeDriveService();
         const db = driveService.getClassifiedChannelDataBase();
 
-        return topics.map(topic => this._createSummary(db, topic, periodStart, periodEnd))
+        return this._config.topicSettings.topics
+            .map(topic => this._createSummary(db, topic, periodStart, periodEnd))
             .filter(summary => summary.channels.length >= 1);
     }
 
-    private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: string, periodStart: Date, periodEnd: Date) : IYoutubeSummary {
-        const channelIds = db.getChannelIdsByTopic(topic);
+    private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : IYoutubeSummary {
+        const channelIds = db.getChannelIdsByTopic(topic.name);
         const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
 
         return {
             channels: rootEls
-                .map(r => this._createChannelData(r, periodStart))
+                .map(r => this._createChannelData(r, periodStart, topic))
                 .filter(c => c !== null),
             periodEndStr: ConverterService.getFormattedDateStr(periodEnd),
             periodStartStr: ConverterService.getFormattedDateStr(periodStart),
-            topic: topic
+            topic: topic.name
         };
     }
 
-    private _createChannelData(rootEl: XmlElement, periodStart: Date) : IYoutubeChannelData | null {
+    private _createChannelData(rootEl: XmlElement, periodStart: Date, topic: IYoutubeTopic) : IYoutubeChannelData | null {
         const channelId = "UC" + rootEl.getTextFromChildEl("yt:channelId");
         const authorEl = rootEl.getChild("author");
-        const entries = this._getRelevantEntries(rootEl, periodStart);
+        const entries = this._getRelevantEntries(rootEl, periodStart, topic);
 
         if (entries.length == 0) return null;
 
@@ -69,7 +70,7 @@ export class YoutubeRssProcessor {
         };
     }
 
-    private _getRelevantEntries(rootEl: XmlElement, periodStart: Date) : XmlElement[] {
+    private _getRelevantEntries(rootEl: XmlElement, periodStart: Date, topic: IYoutubeTopic) : XmlElement[] {
         const entries = this._rssFeedParser.collectElements(rootEl)
             .filter(e => {
                 const publishedDate = this._rssFeedParser.getDateFromElement(e);
@@ -78,6 +79,12 @@ export class YoutubeRssProcessor {
             .filter(e => {
                 const videoUrl = this._rssFeedParser.getLinkFromElement(e);
                 return !videoUrl.includes("shorts");
+            })
+            .filter(e => {
+                const title = this._rssFeedParser.getTitleFromElement(e).toLowerCase();
+                return !topic.skipIfContains.some(word => {
+                    return new RegExp(`\\b${word.toLowerCase()}\\b`).test(title);
+                });
             });
         
         if (entries.length == 0) return [];
