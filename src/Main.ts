@@ -14,7 +14,7 @@ function youtubeReaderEntry() {
     const summaries = rssProcessor.getSummaries();
 
     const mailService = new YoutubeMailService();
-    mailService.sendSummary(summaries);
+    summaries.forEach(summary => mailService.sendSummary(summary))
 }
 
 function youtubeTopicSelectorEntry() {
