@@ -82,7 +82,9 @@ export class YoutubeRssProcessor {
             })
             .filter(e => {
                 const title = this._rssFeedParser.getTitleFromElement(e).toLowerCase();
-                return !topic.skipIfContains.some(word => {
+                const bannedWords = topic.skipIfContains ?? [];
+
+                return !bannedWords.some(word => {
                     return new RegExp(`\\b${word.toLowerCase()}\\b`).test(title);
                 });
             });
