@@ -1,3 +1,4 @@
+import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
 import { IYoutubeChannel } from "../Interfaces/IYoutubeChannel";
 import { IYoutubeTopicSettings } from "../Interfaces/IYoutubeSettings";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
@@ -40,7 +41,8 @@ export class YoutubeChannelClassifier {
 
     private _registerNewChannels(db: ClassifiedYoutubeChannelDatabase, newChannels: IYoutubeChannel[], topics: string[]) : void {
         const result = this._aiService.classifyChannels(this._settings.prompt, newChannels.map(c => c.name), topics);
-        db.addRange(result);
+        const mappedResult = this._mapChannelNamesToIds(result, newChannels);
+        db.addRange(mappedResult);
         this._driveService.updateClassifiedChannelList(db);
     }
 
@@ -48,6 +50,21 @@ export class YoutubeChannelClassifier {
         db.reset();
         this._driveService.updateClassifiedChannelList(db);
         this._registerNewChannels(db, channels, topics);
+    }
+
+    private _mapChannelNamesToIds(db: IClassifiedYoutubeChannelDatabase, newChannels: IYoutubeChannel[]) : IClassifiedYoutubeChannelDatabase {
+        const remappedResult: IClassifiedYoutubeChannelDatabase = {};
+
+        for (const channelName in db) {
+            const info = db[channelName];
+            const channel = newChannels.find(c => c.name === channelName);
+
+            if (!channel) continue;
+
+            remappedResult[channel.id] = info;
+        }
+
+        return remappedResult;
     }
 
     private _getSubscribedChannels(): IYoutubeChannel[] {
