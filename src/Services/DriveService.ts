@@ -28,7 +28,7 @@ export class DriveService extends DriveServiceBase {
 
     protected organizeScript() : GoogleAppsScript.Drive.Folder {
         const rootFolderName = PropertyService.getProperty<string>(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
-        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._getScriptName}`);
+        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._getScriptName()}`);
         this._moveScriptFileToFolder(scriptFolder);
 
         return scriptFolder;
