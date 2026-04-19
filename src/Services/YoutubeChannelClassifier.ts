@@ -56,12 +56,16 @@ export class YoutubeChannelClassifier {
         const remappedResult: IClassifiedYoutubeChannelDatabase = {};
 
         for (const channelName in db) {
-            const info = db[channelName];
             const channel = newChannels.find(c => c.name === channelName);
 
             if (!channel) continue;
 
-            remappedResult[channel.id] = info;
+            const topics = db[channelName].topics ?? [];
+            remappedResult[channel.id] = {
+                channel: channelName,
+                unClassified: topics.length == 0,
+                topics: topics
+            };
         }
 
         return remappedResult;

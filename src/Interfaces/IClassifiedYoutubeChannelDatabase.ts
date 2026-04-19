@@ -3,7 +3,7 @@ export interface IClassifiedYoutubeChannelDatabase {
 }
 
 export interface IClassifiedYoutubeChannelInfo {
-    name: string;
+    channel: string;
     unClassified: boolean;
     topics: string[];
 }

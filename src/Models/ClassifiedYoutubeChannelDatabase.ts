@@ -94,6 +94,8 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         for (const channelId of this.getChannelIds()) {
             const info = this[channelId] as IClassifiedYoutubeChannelInfo;
 
+            if (info.unClassified && info.topics.length == 0) continue;
+
             for (const unusedTopic of unusedTopics) {
                 const matchIndex = info.topics.indexOf(unusedTopic);
 
