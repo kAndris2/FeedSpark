@@ -45,7 +45,8 @@ export abstract class AiStudioServiceBase {
                     const data = JSON.parse(body);
                     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text
                         ?? (() => { throw new Error('Unexpected structure of response!'); })();
-                    return text;
+
+                    return this._extractJson(text);
                 }
                 case 503: {
                     if (attempt < maxRetries) {
@@ -72,5 +73,10 @@ export abstract class AiStudioServiceBase {
                 }
             }
         }
+    }
+
+    private _extractJson(text: string) {
+        const fenceMatch = text.match(/```json([\s\S]*?)```/i);
+        return fenceMatch ? fenceMatch[1].trim() : text.trim();
     }
 }
