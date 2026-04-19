@@ -36,6 +36,9 @@ export class YoutubeChannelClassifier {
         }
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
+
+        if (relevantYoutubeChannels.length == 0) return;
+
         this._registerNewChannels(classifiedChannelDatabase, relevantYoutubeChannels, requiredTopics);
     }
 
