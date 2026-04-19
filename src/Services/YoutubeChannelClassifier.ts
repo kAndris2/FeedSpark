@@ -43,7 +43,7 @@ export class YoutubeChannelClassifier {
     }
 
     private _registerNewChannels(db: ClassifiedYoutubeChannelDatabase, newChannels: IYoutubeChannel[], topics: string[]) : void {
-        const result = this._aiService.classifyChannels(this._settings.prompt, newChannels.map(c => c.name), topics);
+        const result = this._aiService.classifyChannels(newChannels.map(c => c.name), topics);
         const mappedResult = this._mapChannelNamesToIds(result, newChannels);
         db.addRange(mappedResult);
         this._driveService.updateClassifiedChannelList(db);

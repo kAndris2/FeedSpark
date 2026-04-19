@@ -1,15 +1,21 @@
 import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { AiStudioServiceBase } from "./AiStudioServiceBase";
 import { ConverterService } from "./ConverterService";
+import { PropertyService, PropertyType } from "./PropertyService";
 
 export class YoutubeAiService extends AiStudioServiceBase {
+    private readonly _channelClassifierPrompt: string;
+
     constructor(settings: IAiStudioSettings) {
         super(settings);
+
+        this._channelClassifierPrompt = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeChannelClassifierPrompt, 'string', PropertyType.Script);
     }
 
-    public classifyChannels(prompt: string, channels: string[], topics: string[]) : IClassifiedYoutubeChannelDatabase {
+    public classifyChannels(channels: string[], topics: string[]) : IClassifiedYoutubeChannelDatabase {
         const batchSize = 30;
         const dbs: IClassifiedYoutubeChannelDatabase[] = []; 
 
@@ -17,7 +23,7 @@ export class YoutubeAiService extends AiStudioServiceBase {
             const channelBatch = channels.slice(i, i + batchSize);
 
             try {
-                const extendedPrompt = prompt + `
+                const extendedPrompt = this._channelClassifierPrompt + `
                     Channels:
                     ${JSON.stringify(channelBatch, null, 2)}
                     Topics:

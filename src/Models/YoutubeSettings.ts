@@ -23,8 +23,7 @@ export class YoutubeSettings implements IYoutubeSettings, ISelfConstructible<IYo
             rssVersion: "Atom",
             daysToCheck: 0,
             topicSettings: {
-                topics: [],
-                prompt: ""
+                topics: []
             }
         };
     }

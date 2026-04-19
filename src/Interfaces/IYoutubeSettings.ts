@@ -6,7 +6,6 @@ export interface IYoutubeSettings {
 
 export interface IYoutubeTopicSettings {
     topics: IYoutubeTopic[];
-    prompt: string;
 }
 
 export interface IYoutubeTopic {
