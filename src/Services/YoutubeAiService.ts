@@ -1,41 +1,83 @@
 import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
+import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
+import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { AiStudioServiceBase } from "./AiStudioServiceBase";
+import { ConverterService } from "./ConverterService";
+import { PropertyService, PropertyType } from "./PropertyService";
 
 export class YoutubeAiService extends AiStudioServiceBase {
+    private readonly _channelClassifierPrompt: string;
+
     constructor(settings: IAiStudioSettings) {
         super(settings);
+
+        this._channelClassifierPrompt = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeChannelClassifierPrompt, 'string', PropertyType.Script);
     }
 
-    public classifyMusicTitles(titles: string[]) : boolean[] {
-        const prompt = `
-            Classify YouTube titles.
+    public classifyChannels(channels: string[], topics: string[]) : IClassifiedYoutubeChannelDatabase {
+        const batchSize = 30;
+        const dbs: IClassifiedYoutubeChannelDatabase[] = []; 
 
-            Output: JSON boolean array in same order.
+        for (let i = 0; i < channels.length; i += batchSize) {
+            const channelBatch = channels.slice(i, i + batchSize);
 
-            TRUE: music (song, track, single, remix, mashup, album, EP, mixtape, DJ set, mix, lofi, beat tape, official audio/video).
+            try {
+                const extendedPrompt = this._channelClassifierPrompt + `
+                    Channels:
+                    ${JSON.stringify(channelBatch, null, 2)}
+                    Topics:
+                    ${JSON.stringify(topics, null, 2)}
+                `;
 
-            FALSE: radio shows, radio episodes, live content (live, livestream, live session, concert, premiere) or non‑music (vlog, commentary, podcast, tutorial, tech, gaming, reaction, news, review, educational).
+                const responseText = super.send(extendedPrompt);
+                const out: { value?: IClassifiedYoutubeChannelDatabase } = {};
 
+                if (!ConverterService.tryParseJson<IClassifiedYoutubeChannelDatabase>(responseText, out)) {
+                    throw new Error(`The response is not a valid JSON! - '${responseText}'`);
+                }
+
+                const result = new ClassifiedYoutubeChannelDatabase(out.value as IClassifiedYoutubeChannelDatabase);
+                const count = result.count();
+
+                if (count !== channelBatch.length) {
+                    throw new Error(`The length of the response (${count}) does not match the number of items (${channelBatch.length}).`);
+                }
+
+                dbs.push(result);
+            }
+            catch (_) {
+                continue;
+            }
+        }
+
+        const mergedDb = new ClassifiedYoutubeChannelDatabase(null);
+        dbs.forEach(db => mergedDb.addRange(db));
+
+        return mergedDb;
+    }
+
+    public classifyMusicTitles(prompt: string, titles: string[]) : boolean[] {
+        const extendedPrompt = prompt + `
             Titles:
             ${JSON.stringify(titles, null, 2)}
         `;
         
-        const responseText = super.send(prompt);
-        let result: boolean[];
+        const responseText = super.send(extendedPrompt);
+        const out: { value?: boolean[] } = {};
 
-        try {
-            result = JSON.parse(responseText);
-        } 
-        catch (e) {
+        if (!ConverterService.tryParseJson<boolean[]>(responseText, out)) {
             throw new Error(`The response is not a valid JSON! - '${responseText}'`);
         }
+
+        const result = out.value as boolean[];
 
         if (!Array.isArray(result) || !result.every(v => typeof v === 'boolean')) {
             throw new Error(`The response is not a boolean array! - '${responseText}'`);
         }
 
         if (result.length !== titles.length) {
-            throw new Error(`The length of the response (${result.length}) does not match the number of titles (${titles.length}).`);
+            throw new Error(`The length of the response (${result.length}) does not match the number of items (${titles.length}).`);
         }
 
         return result;

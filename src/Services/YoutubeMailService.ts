@@ -6,6 +6,6 @@ export class YoutubeMailService extends MailServiceBase<IYoutubeSummary> {
         const template = this.getHtmlTemplate("Youtube");
         template.summary = summary;
 
-        this.send(template, "YouTube summary");
+        this.send(template, `YouTube summary (${summary.topic})`);
     }
 }

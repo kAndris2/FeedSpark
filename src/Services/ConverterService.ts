@@ -26,4 +26,14 @@ export class ConverterService {
     public static getFormattedDateStr(date: Date) : string {
         return Utilities.formatDate(date, Session.getScriptTimeZone(), "yyyy.MM.dd");
     }
+
+    public static tryParseJson<T>(text: string, outResult: { value?: T }): boolean {
+        try {
+            outResult.value = JSON.parse(text) as T;
+            return true;
+        } catch {
+            outResult.value = undefined;
+            return false;
+        }
+    }
 }

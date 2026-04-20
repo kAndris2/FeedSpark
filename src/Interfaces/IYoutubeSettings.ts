@@ -1,6 +1,18 @@
 export interface IYoutubeSettings {
     rssVersion: string;
     daysToCheck: number;
-    skipVideoIfContains: string[];
+    topicSettings: IYoutubeTopicSettings;
+}
+
+export interface IYoutubeTopicSettings {
+    topics: IYoutubeTopic[];
+}
+
+export interface IYoutubeTopic {
+    name: string;
+    needShorts: boolean;
+    aiFilter: boolean;
+    prompt: string;
+    skipIfContains: string[];
     ignoredChannelIds: string[];
 }
