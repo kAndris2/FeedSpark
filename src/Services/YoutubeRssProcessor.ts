@@ -38,7 +38,9 @@ export class YoutubeRssProcessor {
     }
 
     private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : IYoutubeSummary {
-        const channelIds = db.getChannelIdsByTopic(topic.name);
+        const ignoredChannelIds = new Set(topic.ignoredChannelIds ?? []);
+        const channelIds = db.getChannelIdsByTopic(topic.name)
+            .filter(channelId => !ignoredChannelIds.has(channelId));
         const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
 

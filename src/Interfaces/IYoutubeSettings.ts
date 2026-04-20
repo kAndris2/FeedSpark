@@ -14,4 +14,5 @@ export interface IYoutubeTopic {
     aiFilter: boolean;
     prompt: string;
     skipIfContains: string[];
+    ignoredChannelIds: string[];
 }
