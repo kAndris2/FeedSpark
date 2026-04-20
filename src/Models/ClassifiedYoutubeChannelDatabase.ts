@@ -100,7 +100,7 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
             }
 
             if (info.topics.length === 0) {
-                this._removeChannel(channelId);
+                info.unClassified = true;
             }
         }
     }
