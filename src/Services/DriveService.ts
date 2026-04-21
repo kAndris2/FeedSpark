@@ -36,9 +36,8 @@ export class DriveService extends DriveServiceBase {
 
     protected createFileName(name: string, extension: string) : string {
         const scriptName = this._getScriptName();
-        const userId = PropertyService.getUserId();
 
-        return `${scriptName}_${name}(${userId}).${extension}`;
+        return `${scriptName}_${name}.${extension}`;
     }
 
     private _getScriptName() : string {
