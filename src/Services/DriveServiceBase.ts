@@ -16,11 +16,15 @@ export abstract class DriveServiceBase {
     }
 
     private _getLatestConfigFile(fileName: string) : GoogleAppsScript.Drive.File | null {
+        const user = Session.getActiveUser();
         const files = DriveApp.getFilesByName(fileName);
         let latest: GoogleAppsScript.Drive.File | null = null;
 
         while (files.hasNext()) { 
             const file = files.next();
+            const owner = file.getOwner();
+
+            if (owner.getEmail() != user.getEmail()) continue;
 
             if (!latest || file.getLastUpdated() > latest.getLastUpdated()) {
                 latest = file;
