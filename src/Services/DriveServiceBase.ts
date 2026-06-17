@@ -84,6 +84,10 @@ export abstract class DriveServiceBase implements ILogable {
         return latest;
     }
 
+    protected getShortScriptName(): string {
+        return (this.scriptFile.getName().match(/[A-Z]/g) ?? []).join("");
+    }
+
     private _getFolder(path: string): GoogleAppsScript.Drive.Folder | null {
         const parts = path.split('/');
         let current = DriveApp.getRootFolder();
