@@ -45,7 +45,8 @@ export class YoutubeAiService extends AiStudioServiceBase {
 
                 dbs.push(result);
             }
-            catch (_) {
+            catch (e: any) {
+                this.log(LogSeverity.Error, `Channel classification failed for the current ${batchSize} channels. These channels will be skipped. - Ex.: ${e.message}`);
                 continue;
             }
         }

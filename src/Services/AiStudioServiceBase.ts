@@ -95,8 +95,7 @@ export abstract class AiStudioServiceBase implements ILogable {
                 }
             }
             catch (e: any) {
-                this.log(LogSeverity.Error, `Failed to send prompt due to an unexpected error! - Ex.: ${e.message}`);
-                throw e;
+                throw new Error(`Failed to send prompt due to an unexpected error! - Ex.: ${e.message}`);
             }
         }
     }
