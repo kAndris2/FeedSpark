@@ -5,10 +5,6 @@ import { DriveServiceBase } from "./DriveServiceBase";
 import { GenericLogger } from "./GenericLogger";
 
 export class DriveService extends DriveServiceBase {
-    constructor() {
-        super();
-    }
-
     override log(severity: LogSeverity, message: string): void {
         GenericLogger.addLog(this.constructor.name, message, severity);
     }

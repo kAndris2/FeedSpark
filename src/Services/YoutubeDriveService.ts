@@ -1,10 +1,10 @@
 import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
 import { LogSeverity } from "../Interfaces/ILogable";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
-import { DriveService } from "./DriveService";
+import { DriveServiceBase } from "./DriveServiceBase";
 import { GenericLogger } from "./GenericLogger";
 
-export class YoutubeDriveService extends DriveService {
+export class YoutubeDriveService extends DriveServiceBase {
     private readonly _classifiedChannelsFilename: string = "youtube_channels";
 
     override log(severity: LogSeverity, message: string): void {
