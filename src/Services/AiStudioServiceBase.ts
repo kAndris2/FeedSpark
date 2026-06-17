@@ -1,6 +1,7 @@
 import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
+import { ConverterService } from "./ConverterService";
 import { GenericLogger } from "./GenericLogger";
 import { HttpRequestManager } from "./HttpRequestManager";
 import { PropertyService, PropertyType } from "./PropertyService";
@@ -21,7 +22,7 @@ export abstract class AiStudioServiceBase implements ILogable {
         GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
-    protected send(prompt: string): any {
+    protected send<T>(prompt: string): T {
         const payload = {
             contents: [{
                 parts: [{ 
@@ -55,7 +56,15 @@ export abstract class AiStudioServiceBase implements ILogable {
                             ?? (() => { throw new Error('Unexpected structure of response!'); })();
 
                         this.log(LogSeverity.Info, "Prompt processing completed successfully!");
-                        return this._extractJson(text);
+
+                        const extractedJson = this._extractJson(text);
+                        const out: { value?: T } = {};
+
+                        if (!ConverterService.tryParseJson<T>(extractedJson, out)) {
+                            throw new Error(`The response is not a valid JSON! - '${extractedJson}'`);
+                        }
+
+                        return out.value as T;
                     }
                     case 503: {
                         if (attempt < maxRetries) {

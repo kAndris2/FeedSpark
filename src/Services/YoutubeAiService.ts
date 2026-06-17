@@ -1,9 +1,10 @@
 import { IAiStudioSettings } from "../Interfaces/IAiStudioSettings";
 import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
+import { LogSeverity } from "../Interfaces/ILogable";
 import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { AiStudioServiceBase } from "./AiStudioServiceBase";
-import { ConverterService } from "./ConverterService";
+import { GenericLogger } from "./GenericLogger";
 import { PropertyService, PropertyType } from "./PropertyService";
 
 export class YoutubeAiService extends AiStudioServiceBase {
@@ -13,6 +14,10 @@ export class YoutubeAiService extends AiStudioServiceBase {
         super(settings);
 
         this._channelClassifierPrompt = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeChannelClassifierPrompt, 'string', PropertyType.Script);
+    }
+
+    override log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
     public classifyChannels(channels: string[], topics: string[]) : IClassifiedYoutubeChannelDatabase {
@@ -30,14 +35,8 @@ export class YoutubeAiService extends AiStudioServiceBase {
                     ${JSON.stringify(topics, null, 2)}
                 `;
 
-                const responseText = super.send(extendedPrompt);
-                const out: { value?: IClassifiedYoutubeChannelDatabase } = {};
-
-                if (!ConverterService.tryParseJson<IClassifiedYoutubeChannelDatabase>(responseText, out)) {
-                    throw new Error(`The response is not a valid JSON! - '${responseText}'`);
-                }
-
-                const result = new ClassifiedYoutubeChannelDatabase(out.value as IClassifiedYoutubeChannelDatabase);
+                const response = super.send<IClassifiedYoutubeChannelDatabase>(extendedPrompt);
+                const result = new ClassifiedYoutubeChannelDatabase(response);
                 const count = result.count();
 
                 if (count !== channelBatch.length) {
@@ -63,23 +62,16 @@ export class YoutubeAiService extends AiStudioServiceBase {
             ${JSON.stringify(titles, null, 2)}
         `;
         
-        const responseText = super.send(extendedPrompt);
-        const out: { value?: boolean[] } = {};
+        const response = super.send<boolean[]>(extendedPrompt);
 
-        if (!ConverterService.tryParseJson<boolean[]>(responseText, out)) {
-            throw new Error(`The response is not a valid JSON! - '${responseText}'`);
+        if (!Array.isArray(response) || !response.every(v => typeof v === 'boolean')) {
+            throw new Error(`The response is not a boolean array! - '${JSON.stringify(response)}'`);
         }
 
-        const result = out.value as boolean[];
-
-        if (!Array.isArray(result) || !result.every(v => typeof v === 'boolean')) {
-            throw new Error(`The response is not a boolean array! - '${responseText}'`);
+        if (response.length !== titles.length) {
+            throw new Error(`The length of the response (${response.length}) does not match the number of items (${titles.length}).`);
         }
 
-        if (result.length !== titles.length) {
-            throw new Error(`The length of the response (${result.length}) does not match the number of items (${titles.length}).`);
-        }
-
-        return result;
+        return response;
     }
 }
