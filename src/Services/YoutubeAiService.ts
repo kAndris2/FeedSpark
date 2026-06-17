@@ -24,6 +24,8 @@ export class YoutubeAiService extends AiStudioServiceBase {
         const batchSize = 30;
         const dbs: IClassifiedYoutubeChannelDatabase[] = []; 
 
+        this.log(LogSeverity.Info, `Beginning classification for ${channels.length} channels over ${topics.length} topics.`);
+
         for (let i = 0; i < channels.length; i += batchSize) {
             const channelBatch = channels.slice(i, i + batchSize);
 
@@ -46,13 +48,15 @@ export class YoutubeAiService extends AiStudioServiceBase {
                 dbs.push(result);
             }
             catch (e: any) {
-                this.log(LogSeverity.Error, `Channel classification failed for the current ${batchSize} channels. These channels will be skipped. - Ex.: ${e.message} | Channel count: ${channelBatch.length} | Channels: ${channelBatch.join(', ')}`);
+                this.log(LogSeverity.Error, `Channel classification failed for the current batch of channels. These channels will be skipped. - Ex.: ${e.message} | Channel count: ${channelBatch.length} | Channels: ${channelBatch.join(', ')}`);
                 continue;
             }
         }
 
         const mergedDb = new ClassifiedYoutubeChannelDatabase(null);
         dbs.forEach(db => mergedDb.addRange(db));
+
+        this.log(LogSeverity.Info, `Channel classification successfully completed. Processed ${mergedDb.count()} out of ${channels.length} channels.`);
 
         return mergedDb;
     }
