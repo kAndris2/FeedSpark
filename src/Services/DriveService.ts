@@ -1,15 +1,16 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
-import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
+import { LogSeverity } from "../Interfaces/ILogable";
 import { AppSettings } from "../Models/AppSettings";
 import { DriveServiceBase } from "./DriveServiceBase";
-import { PropertyService, PropertyType } from "./PropertyService";
+import { GenericLogger } from "./GenericLogger";
 
 export class DriveService extends DriveServiceBase {
-    private readonly _scriptFile: GoogleAppsScript.Drive.File;
-
     constructor() {
         super();
-        this._scriptFile = this._getScriptFile();
+    }
+
+    override log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
     public getConfiguration() : IAppSettings {
@@ -17,62 +18,21 @@ export class DriveService extends DriveServiceBase {
         const config = this.get<IAppSettings>(fileName);
 
         if (config) {
+            this.log(LogSeverity.Info, "Configuration inicialized!");
             return new AppSettings(config);
         }
 
-        const scriptFolder = this.organizeScript();
-        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName, scriptFolder);
+        this.moveFileToFolder(this.scriptFile, this.scriptFolder);
+        const defaultPrimitiveConfig = this._createDefaultPrimitiveConfiguration(fileName);
 
         return new AppSettings(defaultPrimitiveConfig);
     }
 
-    protected organizeScript() : GoogleAppsScript.Drive.Folder {
-        const rootFolderName = PropertyService.getProperty<string>(ScriptPropertiesKeyVault.appRootFolder, 'string', PropertyType.Script);
-        const scriptFolder = this._createScriptFolder(`${rootFolderName}/${this._getScriptName()}`);
-        this._moveScriptFileToFolder(scriptFolder);
-
-        return scriptFolder;
-    }
-
-    protected createFileName(name: string, extension: string) : string {
-        const scriptName = this._getScriptName();
-
-        return `${scriptName}_${name}.${extension}`;
-    }
-
-    private _getScriptName() : string {
-        return this._scriptFile.getName();
-    }
-
-    private _createDefaultPrimitiveConfiguration(fileName: string, scriptFolder: GoogleAppsScript.Drive.Folder) : IAppSettings {
+    private _createDefaultPrimitiveConfiguration(fileName: string) : IAppSettings {
         const defaultConfig = new AppSettings().createDefault();
-        scriptFolder.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
+        this.scriptFolder.createFile(fileName, JSON.stringify(defaultConfig), "text/plain");
 
+        this.log(LogSeverity.Info, "Default configuration created!");
         return defaultConfig;
-    }
-
-    private _createScriptFolder(path: string) {
-        const parts = path.split('/');
-        let current = DriveApp.getRootFolder();
-
-        parts.forEach(name => {
-            let folders = current.getFoldersByName(name);
-            current = folders.hasNext() ? folders.next() : current.createFolder(name);
-        });
-
-        return current;
-    }
-        
-    private _moveScriptFileToFolder(folder: GoogleAppsScript.Drive.Folder) : void {
-        try {
-            this._scriptFile.moveTo(folder);
-        }
-        catch(e) {
-        }
-    }
-
-    private _getScriptFile() : GoogleAppsScript.Drive.File {
-        const scriptId = ScriptApp.getScriptId();
-        return DriveApp.getFileById(scriptId);
     }
 }
