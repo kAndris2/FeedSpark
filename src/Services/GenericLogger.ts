@@ -32,6 +32,7 @@ export class GenericLogger {
             }
             case 'debug': {
                 console.debug(message);
+                break;
             }
             default: {
                 console.log(message);
