@@ -1,11 +1,13 @@
 import { IClassifiedYoutubeChannelDatabase } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
+import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { IYoutubeChannel } from "../Interfaces/IYoutubeChannel";
 import { IYoutubeTopicSettings } from "../Interfaces/IYoutubeSettings";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
+import { GenericLogger } from "./GenericLogger";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
 
-export class YoutubeChannelClassifier {
+export class YoutubeChannelClassifier implements ILogable {
     private readonly _settings: IYoutubeTopicSettings;
     private readonly _aiService:  YoutubeAiService;
     private readonly _driveService: YoutubeDriveService;
@@ -16,12 +18,21 @@ export class YoutubeChannelClassifier {
         this._driveService = new YoutubeDriveService();
     }
 
+    log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
+    }
+
     public classifyChannels() : void {
+        this.log(LogSeverity.Info, `Channel classification started.`);
+
         const subscribedChannels = this._getSubscribedChannels();
+        this.log(LogSeverity.Info, `Found ${subscribedChannels.length} subscribed channels.`);
+
         const classifiedChannelDatabase = this._driveService.getClassifiedChannelDataBase();
         const requiredTopics = this._settings.topics.map(t => t.name);
+        this.log(LogSeverity.Info, `Found ${requiredTopics.length} required topics. - ${requiredTopics.join(', ')}`);
+
         classifiedChannelDatabase.normalize(subscribedChannels.map(c => c.id), requiredTopics);
-        
         const registeredTopics = classifiedChannelDatabase.getTopics();
 
         if (registeredTopics.length >= 1) {
@@ -30,16 +41,26 @@ export class YoutubeChannelClassifier {
             });
 
             if (!allTopicsRegistered) {
+                const missingTopics = requiredTopics.filter(t => registeredTopics.indexOf(t) === -1);
+                this.log(LogSeverity.Info, `Channel re-registration started due to unprocessed topics. - Missing topics: ${missingTopics.join(', ')}`);
                 this._reRegisterChannels(classifiedChannelDatabase, subscribedChannels, requiredTopics);
                 return;
             }
         }
 
         const relevantYoutubeChannels = subscribedChannels.filter(subscribedChannel => !classifiedChannelDatabase.has(subscribedChannel.id));
-
-        if (relevantYoutubeChannels.length == 0) return;
+        
+        if (relevantYoutubeChannels.length == 0) {
+            this.log(LogSeverity.Info, "Channel classification skipped, because no relevant channels found!");
+            return;
+        }
+        else {
+            this.log(LogSeverity.Info, `Found ${relevantYoutubeChannels.length} relevant youtube channels to classify. - ${relevantYoutubeChannels.join(', ')}`);
+        }
 
         this._registerNewChannels(classifiedChannelDatabase, relevantYoutubeChannels, requiredTopics);
+
+        this.log(LogSeverity.Info, `Channel classification finished successfully!`);
     }
 
     private _registerNewChannels(db: ClassifiedYoutubeChannelDatabase, newChannels: IYoutubeChannel[], topics: string[]) : void {
