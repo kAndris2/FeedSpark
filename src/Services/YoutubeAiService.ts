@@ -62,21 +62,27 @@ export class YoutubeAiService extends AiStudioServiceBase {
     }
 
     public classifyMusicTitles(prompt: string, titles: string[]) : boolean[] {
-        const extendedPrompt = prompt + `
-            Titles:
-            ${JSON.stringify(titles, null, 2)}
-        `;
-        
-        const response = super.send<boolean[]>(extendedPrompt);
+        try {
+            const extendedPrompt = prompt + `
+                Titles:
+                ${JSON.stringify(titles, null, 2)}
+            `;
+            
+            const response = super.send<boolean[]>(extendedPrompt);
 
-        if (!Array.isArray(response) || !response.every(v => typeof v === 'boolean')) {
-            throw new Error(`The response is not a boolean array! - '${JSON.stringify(response)}'`);
+            if (!Array.isArray(response) || !response.every(v => typeof v === 'boolean')) {
+                throw new Error(`The response is not a boolean array! - '${JSON.stringify(response)}'`);
+            }
+
+            if (response.length !== titles.length) {
+                throw new Error(`The length of the response (${response.length}) does not match the number of items (${titles.length}).`);
+            }
+
+            return response;
         }
-
-        if (response.length !== titles.length) {
-            throw new Error(`The length of the response (${response.length}) does not match the number of items (${titles.length}).`);
+        catch (e: any) {
+            this.log(LogSeverity.Error, `Music title classification failed! - Ex.: ${e.message} | Affected titles: ${titles.join(', ')}`);
+            throw e;
         }
-
-        return response;
     }
 }
