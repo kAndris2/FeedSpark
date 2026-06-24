@@ -8,6 +8,7 @@ import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
+import { YoutubeSummary } from "../Models/YoutubeSummary";
 import { ConverterService } from "./ConverterService";
 import { GenericLogger } from "./GenericLogger";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
@@ -44,13 +45,14 @@ export class YoutubeRssProcessor implements ILogable {
         const summaries = this._config.topicSettings.topics
             .map(topic => this._createSummary(db, topic, periodStart, periodEnd))
             .filter(summary => summary.channels.length >= 1);
-        const videoCount = summaries.reduce((sum, summary) => sum + summary.channels.reduce((channelSum, channel) => channelSum + channel.videos.length, 0), 0);
+        const channelCount = summaries.reduce((sum, summary) => sum + summary.countChannels(), 0);
+        const videoCount = summaries.reduce((sum, summary) => sum + summary.countVideos(), 0);
 
-        this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total videos across all channels: ${videoCount}`);
+        this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total channels: ${channelCount} | Total videos across all channels: ${videoCount}`);
         return summaries;
     }
 
-    private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : IYoutubeSummary {
+    private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : YoutubeSummary {
         this.log(LogSeverity.Info, `Summary creation started for topic '${topic}'.`);
         
         const ignoredChannelIds = new Set(topic.ignoredChannelIds ?? []);
@@ -61,17 +63,16 @@ export class YoutubeRssProcessor implements ILogable {
         
         const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
-        const summary: IYoutubeSummary = {
+        const summary = new YoutubeSummary({
             channels: rootEls
                 .map(r => this._createChannelData(r, periodStart, topic))
                 .filter(c => c !== null),
             periodEndStr: ConverterService.getFormattedDateStr(periodEnd),
             periodStartStr: ConverterService.getFormattedDateStr(periodStart),
             topic: topic.name
-        };
-        const videoCount = summary.channels.reduce((sum, channel) => sum + channel.videos.length, 0);
+        });
 
-        this.log(LogSeverity.Info, `Summary creation finished for topic '${topic}'. - Channels: ${summary.channels.length} | Videos: ${videoCount}`);
+        this.log(LogSeverity.Info, `Summary creation finished for topic '${topic}'. - Channels: ${summary.countChannels()} | Videos: ${summary.countVideos()}`);
         return summary;
     }
 
