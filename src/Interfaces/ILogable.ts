@@ -5,5 +5,6 @@ export interface ILogable {
 export enum LogSeverity {
     Info = "info",
     Warn = "warn",
-    Error = "error"
+    Error = "error",
+    Debug = "debug"
 }

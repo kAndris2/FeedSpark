@@ -47,6 +47,7 @@ export class YoutubeRssProcessor implements ILogable {
             .filter(summary => summary.channels.length >= 1);
         const channelCount = summaries.reduce((sum, summary) => sum + summary.countChannels(), 0);
         const videoCount = summaries.reduce((sum, summary) => sum + summary.countVideos(), 0);
+        summaries.forEach(s => s.logRandomChannelImageDataUrl());
 
         this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total channels: ${channelCount} | Total videos across all channels: ${videoCount}`);
         return summaries;
