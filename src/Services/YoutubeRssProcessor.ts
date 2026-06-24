@@ -1,17 +1,20 @@
+import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeTopic } from "../Interfaces/IYoutubeSettings";
 import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
+import { DateHelper } from "../Misc/DateHelper";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { ConverterService } from "./ConverterService";
+import { GenericLogger } from "./GenericLogger";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
 
-export class YoutubeRssProcessor {
+export class YoutubeRssProcessor implements ILogable {
     private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
@@ -25,26 +28,40 @@ export class YoutubeRssProcessor {
         this._config = config;
     }
 
+    log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
+    }
+
     public getSummaries() : IYoutubeSummary[] {
+        const dateFormat = "yyyy.MM.dd";
         const periodEnd = new Date();
         const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
 
+        this.log(LogSeverity.Info, `Summary collection initiated for the specified interval: From: ${DateHelper.getFormattedDateStr(periodStart, dateFormat)} | To: ${DateHelper.getFormattedDateStr(periodEnd, dateFormat)}`);
+
         const driveService = new YoutubeDriveService();
         const db = driveService.getClassifiedChannelDataBase();
-
-        return this._config.topicSettings.topics
+        const summaries = this._config.topicSettings.topics
             .map(topic => this._createSummary(db, topic, periodStart, periodEnd))
             .filter(summary => summary.channels.length >= 1);
+        const videoCount = summaries.reduce((sum, summary) => sum + summary.channels.reduce((channelSum, channel) => channelSum + channel.videos.length, 0), 0);
+
+        this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total videos across all channels: ${videoCount}`);
+        return summaries;
     }
 
     private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : IYoutubeSummary {
+        this.log(LogSeverity.Info, `Summary creation started for topic '${topic}'.`);
+        
         const ignoredChannelIds = new Set(topic.ignoredChannelIds ?? []);
         const channelIds = db.getChannelIdsByTopic(topic.name)
             .filter(channelId => !ignoredChannelIds.has(channelId));
+
+        this.log(LogSeverity.Info, `Found ${channelIds.length} relevant channels.`);
+        
         const feedUrls = channelIds.map(channelId => this._config.feedUrlTemplate.replace(HelperConstants.toBeReplaced, channelId));
         const rootEls = this._rssFeedParser.getAllRootElementsParallel(feedUrls);
-
-        return {
+        const summary: IYoutubeSummary = {
             channels: rootEls
                 .map(r => this._createChannelData(r, periodStart, topic))
                 .filter(c => c !== null),
@@ -52,6 +69,10 @@ export class YoutubeRssProcessor {
             periodStartStr: ConverterService.getFormattedDateStr(periodStart),
             topic: topic.name
         };
+        const videoCount = summary.channels.reduce((sum, channel) => sum + channel.videos.length, 0);
+
+        this.log(LogSeverity.Info, `Summary creation finished for topic '${topic}'. - Channels: ${summary.channels.length} | Videos: ${videoCount}`);
+        return summary;
     }
 
     private _createChannelData(rootEl: XmlElement, periodStart: Date, topic: IYoutubeTopic) : IYoutubeChannelData | null {
@@ -117,6 +138,7 @@ export class YoutubeRssProcessor {
                 return entries.filter((_, i) => results[i] === true);
             }
             catch (ex) {
+                this.log(LogSeverity.Warn, `AI filtering failed! Unfiltered videos are being processed for channel "${rootEl.getTextFromChildEl("title")}"`);
                 return entries;
             }
         }
