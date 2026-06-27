@@ -30,10 +30,6 @@ export class GenericLogger {
                 console.error(message);
                 break;
             }
-            case 'debug': {
-                console.debug(message);
-                break;
-            }
             default: {
                 console.log(message);
                 break;

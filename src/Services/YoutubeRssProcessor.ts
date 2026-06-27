@@ -54,7 +54,7 @@ export class YoutubeRssProcessor implements ILogable {
     }
 
     private _createSummary(db: ClassifiedYoutubeChannelDatabase, topic: IYoutubeTopic, periodStart: Date, periodEnd: Date) : YoutubeSummary {
-        this.log(LogSeverity.Info, `Summary creation started for topic '${topic}'.`);
+        this.log(LogSeverity.Info, `Summary creation started for topic '${topic.name}'.`);
         
         const ignoredChannelIds = new Set(topic.ignoredChannelIds ?? []);
         const channelIds = db.getChannelIdsByTopic(topic.name)
@@ -73,7 +73,7 @@ export class YoutubeRssProcessor implements ILogable {
             topic: topic.name
         });
 
-        this.log(LogSeverity.Info, `Summary creation finished for topic '${topic}'. - Channels: ${summary.countChannels()} | Videos: ${summary.countVideos()}`);
+        this.log(LogSeverity.Info, `Summary creation finished for topic '${topic.name}'. - Channels: ${summary.countChannels()} | Videos: ${summary.countVideos()}`);
         return summary;
     }
 
