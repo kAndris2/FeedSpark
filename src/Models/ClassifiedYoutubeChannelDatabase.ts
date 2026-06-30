@@ -1,6 +1,8 @@
 import { IClassifiedYoutubeChannelDatabase, IClassifiedYoutubeChannelInfo } from "../Interfaces/IClassifiedYoutubeChannelDatabase";
+import { ILogable, LogSeverity } from "../Interfaces/ILogable";
+import { GenericLogger } from "../Services/GenericLogger";
 
-export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChannelDatabase {
+export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChannelDatabase, ILogable {
     
     [channelId: string]: IClassifiedYoutubeChannelInfo | any;
 
@@ -8,6 +10,10 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
         if (!db) return;
 
         Object.assign(this, db);
+    }
+
+    log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
     public getChannelIdsByTopic(topic: string) : string[] {

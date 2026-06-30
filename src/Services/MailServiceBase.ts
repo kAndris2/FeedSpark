@@ -1,4 +1,11 @@
-export abstract class MailServiceBase<T> {
+import { ILogable, LogSeverity } from "../Interfaces/ILogable";
+import { GenericLogger } from "./GenericLogger";
+
+export abstract class MailServiceBase<T> implements ILogable {
+    log(severity: LogSeverity, message: string): void {
+        GenericLogger.addLog(this.constructor.name, message, severity);
+    }
+
     public abstract sendSummary(summary: T) : void;
 
     protected send(htmlTemplate: GoogleAppsScript.HTML.HtmlTemplate, subject: string) : void {
@@ -9,6 +16,8 @@ export abstract class MailServiceBase<T> {
             subject: subject,
             htmlBody: htmlOutput
         });
+
+        this.log(LogSeverity.Info, `Summary email sent. - Subject: ${subject}`);
     }
 
     protected getHtmlTemplate(templateName: string) : GoogleAppsScript.HTML.HtmlTemplate {
