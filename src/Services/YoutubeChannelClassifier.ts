@@ -55,7 +55,7 @@ export class YoutubeChannelClassifier implements ILogable {
             return;
         }
         else {
-            this.log(LogSeverity.Info, `Found ${relevantYoutubeChannels.length} relevant youtube channels to classify. - ${relevantYoutubeChannels.join(', ')}`);
+            this.log(LogSeverity.Info, `Found ${relevantYoutubeChannels.length} relevant youtube channels to classify. - ${relevantYoutubeChannels.map(c => c.name).join(', ')}`);
         }
 
         this._registerNewChannels(classifiedChannelDatabase, relevantYoutubeChannels, requiredTopics);
@@ -67,6 +67,11 @@ export class YoutubeChannelClassifier implements ILogable {
         const result = this._aiService.classifyChannels(newChannels.map(c => c.name), topics);
         const mappedResult = this._mapChannelNamesToIds(result, newChannels);
         db.addRange(mappedResult);
+
+        const channelInfos = Object.keys(mappedResult).map(key => mappedResult[key]);
+        const channelInfosStr = channelInfos.map(c => `${c.channel}->${c.topics.join('/')}`);
+        this.log(LogSeverity.Info, `Classified channels added to the db. - ${channelInfosStr.join(', ')}`);
+
         this._driveService.updateClassifiedChannelList(db);
     }
 

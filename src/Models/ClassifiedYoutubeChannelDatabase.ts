@@ -37,10 +37,6 @@ export class ClassifiedYoutubeChannelDatabase implements IClassifiedYoutubeChann
             const info = db[channelId];
             this[channelId] = info;
         }
-
-        const channelInfos = Object.keys(db).map(key => db[key]);
-        const channelInfosStr = channelInfos.map(c => `${c.channel}->${c.topics.join('/')}`);
-        this.log(LogSeverity.Info, `Classified channels added to the db. - ${channelInfosStr.join(', ')}`);
     }
 
     public has(channelId: string) : boolean {
