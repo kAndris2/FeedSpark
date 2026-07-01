@@ -1,8 +1,8 @@
-import { IYoutubeSummary } from "../Interfaces/IYoutubeSummary";
+import { YoutubeSummary } from "../Models/YoutubeSummary";
 import { MailServiceBase } from "./MailServiceBase";
 
-export class YoutubeMailService extends MailServiceBase<IYoutubeSummary> {
-    public sendSummary(summary: IYoutubeSummary) : void {
+export class YoutubeMailService extends MailServiceBase<YoutubeSummary> {
+    public sendSummary(summary: YoutubeSummary) : void {
         const template = this.getHtmlTemplate("Youtube");
         template.summary = summary;
 

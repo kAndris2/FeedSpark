@@ -1,7 +1,7 @@
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeTopic } from "../Interfaces/IYoutubeSettings";
-import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
+import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
 import { DateHelper } from "../Misc/DateHelper";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
@@ -37,7 +37,7 @@ export class YoutubeRssProcessor implements ILogable {
         GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
-    public getSummaries() : IYoutubeSummary[] {
+    public getSummaries() : YoutubeSummary[] {
         const dateFormat = "yyyy.MM.dd";
         const periodEnd = new Date();
         const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);

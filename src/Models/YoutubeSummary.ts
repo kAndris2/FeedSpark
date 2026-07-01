@@ -7,9 +7,12 @@ export class YoutubeSummary implements IYoutubeSummary, ILogable {
     periodStartStr!: string;
     periodEndStr!: string;
     topic!: string;
+    totalVideosCount!: number;
     
     constructor(summary: IYoutubeSummary) {
         Object.assign(this, summary);
+
+        this.totalVideosCount = this.countVideos();
     }
 
     log(severity: LogSeverity, message: string): void {

@@ -8,12 +8,18 @@
                 <table cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background:#020617;border-radius:16px;border:1px solid #1e293b;">
                     <tr>
                         <td style="padding:20px 24px;border-bottom:1px solid #1e293b;">
-                            <div style="color:#e5e7eb;font-size:20px;font-weight:bold;">
-                                YouTube summary (<?= summary.topic ?>)
-                            </div>
-                            <div style="color:#9ca3af;font-size:12px;margin-top:4px;">
-                                Period: <?= summary.periodStartStr ?> - <?= summary.periodEndStr ?>
-                            </div>
+                            <table cellspacing="0" style="width:100%;">
+                                <tr>
+                                    <td style="color:#e5e7eb;font-size:20px;font-weight:bold;">
+                                        YouTube summary (<?= summary.topic ?>)
+                                    </td>
+
+                                    <td align="right" valign="top" style="color:#9ca3af;font-size:12px;white-space:nowrap;">
+                                        <div>Period: <?= summary.periodStartStr ?> - <?= summary.periodEndStr ?></div>
+                                        <div style="margin-top:4px;">Total videos: <?= summary.totalVideosCount ?></div>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 
