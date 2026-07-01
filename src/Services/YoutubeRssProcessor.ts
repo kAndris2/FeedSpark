@@ -5,12 +5,14 @@ import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutub
 import { DateHelper } from "../Misc/DateHelper";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { YoutubeSummary } from "../Models/YoutubeSummary";
 import { ConverterService } from "./ConverterService";
 import { GenericLogger } from "./GenericLogger";
+import { PropertyService, PropertyType } from "./PropertyService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
@@ -19,6 +21,7 @@ export class YoutubeRssProcessor implements ILogable {
     private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
+    private readonly _videoDescriptionMaxLength: number;
 
     constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
         this._aiService = aiService;
@@ -27,6 +30,7 @@ export class YoutubeRssProcessor implements ILogable {
             RssNamespaceProvider.find("YouTube")
         ]);
         this._config = config;
+        this._videoDescriptionMaxLength = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeVideoDescriptionMaxLength, 'number', PropertyType.Script);
     }
 
     log(severity: LogSeverity, message: string): void {
@@ -150,10 +154,11 @@ export class YoutubeRssProcessor implements ILogable {
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
         const mediaEl = entryEl.getChild("media:group");
+        const description = mediaEl.getTextFromChildEl("media:description") ?? "";
 
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
-            description: mediaEl.getTextFromChildEl("media:description") ?? "",
+            description: this._shortenText(description, this._videoDescriptionMaxLength),
             url: this._rssFeedParser.getLinkFromElement(entryEl),
             thumbnailUrl: mediaEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
             views: parseInt(
@@ -184,5 +189,12 @@ export class YoutubeRssProcessor implements ILogable {
             avatarUrl: avatarMatch ? ConverterService.fixUrl(avatarMatch[1]) : "",
             bannerUrl: bannerMatch ? ConverterService.fixUrl(bannerMatch[1]) : ""
         } satisfies IYoutubeChannelImageData;
+    }
+
+    private _shortenText(text: string, maxLength: number) : string {
+        if (text.length <= maxLength) 
+            return text;
+
+        return text.substring(0, maxLength - 3) + "...";
     }
 }
