@@ -155,17 +155,18 @@ export class YoutubeRssProcessor implements ILogable {
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
         const mediaEl = entryEl.getChild("media:group");
         const description = mediaEl.getTextFromChildEl("media:description") ?? "";
+        const views = parseInt(
+            mediaEl
+                .getChild("media:community")
+                .getValueFromChildEl("media:statistics", "views") ?? "0"
+        );
 
         return {
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             description: this._shortenText(description, this._videoDescriptionMaxLength),
             url: this._rssFeedParser.getLinkFromElement(entryEl),
             thumbnailUrl: mediaEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
-            views: parseInt(
-                mediaEl
-                    .getChild("media:community")
-                    .getValueFromChildEl("media:statistics", "views") ?? "0"
-            ),
+            views: this._formatViewsNumber(views),
             publishedDateStr: ConverterService.getFormattedDateStr(
                 this._rssFeedParser.getDateFromElement(entryEl)
             )
@@ -196,5 +197,22 @@ export class YoutubeRssProcessor implements ILogable {
             return text;
 
         return text.substring(0, maxLength - 3) + "...";
+    }
+
+    private _formatViewsNumber(value: number): string {
+        const units: [number, string][] = [
+            [1_000_000_000, "B"],
+            [1_000_000, "M"],
+            [1000, "K"]
+        ];
+
+        for (const [limit, suffix] of units) {
+            if (value >= limit) {
+                const n = value / limit;
+                return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)) + suffix;
+            }
+        }
+
+        return value.toString();
     }
 }

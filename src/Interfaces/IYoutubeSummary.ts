@@ -10,7 +10,7 @@ export interface IYoutubeVideoData {
     description: string;
     url: string;
     thumbnailUrl: string;
-    views: number;
+    views: string;
     publishedDateStr: string;
 }
 
