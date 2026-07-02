@@ -162,6 +162,7 @@ export class YoutubeRssProcessor implements ILogable {
         );
 
         return {
+            id: entryEl.getChild("yt:videoId").getText(),
             title: this._rssFeedParser.getTitleFromElement(entryEl),
             description: this._shortenText(description, this._videoDescriptionMaxLength),
             url: this._rssFeedParser.getLinkFromElement(entryEl),
@@ -192,6 +193,16 @@ export class YoutubeRssProcessor implements ILogable {
         } satisfies IYoutubeChannelImageData;
     }
 
+    private _setRatingOnSummaryVideos(summaries: YoutubeSummary[]) : void {
+        const videoIds = summaries
+            .map(s => s.channels)
+            .map(channels => channels.map(c => c.videos.map(v => v.id)))
+            .reduce((acc, nested) => acc.concat.apply(acc, nested), [])
+            .reduce((acc, ids) => acc.concat(ids), []);
+        
+        
+    }
+
     private _shortenText(text: string, maxLength: number) : string {
         if (text.length <= maxLength) 
             return text;
@@ -214,5 +225,13 @@ export class YoutubeRssProcessor implements ILogable {
         }
 
         return value.toString();
+    }
+
+    private _computeStarRating(likeCount: number, viewCount: number, commentCount: number): number {
+        const ratio = (likeCount / viewCount) * 100;
+        const likeBoost = likeCount / 50000;
+        const commentBoost = commentCount / 2000;
+        const score = ratio + likeBoost + commentBoost;
+        return Math.min(5, Math.max(0, score));
     }
 }
