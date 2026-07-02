@@ -244,6 +244,8 @@ export class YoutubeRssProcessor implements ILogable {
         const likeBoost = videoStatistics.likeCount / 50000;
         const commentBoost = videoStatistics.commentCount / 2000;
         const score = ratio + likeBoost + commentBoost;
-        return Math.min(5, Math.max(0, score));
+
+        const clamped = Math.min(5, Math.max(0, score));
+        return Math.round(clamped * 10) / 10;
     }
 }
