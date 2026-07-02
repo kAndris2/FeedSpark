@@ -19,14 +19,12 @@ import { YoutubeDriveService } from "./YoutubeDriveService";
 import { YoutubeService } from "./YoutubeService";
 
 export class YoutubeRssProcessor implements ILogable {
-    private readonly _youtubeService: YoutubeService;
     private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
     private readonly _videoDescriptionMaxLength: number;
 
-    constructor(config: YoutubeSettings, aiService: YoutubeAiService, youtubeService: YoutubeService) {
-        this._youtubeService = youtubeService;
+    constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
         this._aiService = aiService;
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
@@ -202,7 +200,7 @@ export class YoutubeRssProcessor implements ILogable {
         const videoIds = summaries
             .map(summary => summary.collectVideoIds())
             .reduce((acc, ids) => acc.concat(ids), []);
-        const videoStats = this._youtubeService.getVideoStats(videoIds);
+        const videoStats = new YoutubeService().getVideoStats(videoIds);
 
         for (const summary of summaries) {
             for (const channel of summary.channels) {
