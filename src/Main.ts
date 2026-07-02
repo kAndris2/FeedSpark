@@ -8,6 +8,7 @@ import { YoutubeAiService } from "./Services/YoutubeAiService";
 import { YoutubeChannelClassifier } from "./Services/YoutubeChannelClassifier";
 import { YoutubeMailService } from "./Services/YoutubeMailService";
 import { YoutubeRssProcessor } from "./Services/YoutubeRssProcessor";
+import { YoutubeService } from "./Services/YoutubeService";
 
 let configBase: IAppSettings;
 let loggerDriveService: LoggerDriveService;
@@ -27,7 +28,8 @@ function youtubeReaderEntry() {
 
         const config = configBase.youtubeSettings;
         const aiService = new YoutubeAiService(configBase.aiStudioSettings);
-        const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, aiService);
+        const youtubeService = new YoutubeService();
+        const rssProcessor = new YoutubeRssProcessor(config as YoutubeSettings, aiService, youtubeService);
         const summaries = rssProcessor.getSummaries();
 
         const mailService = new YoutubeMailService();

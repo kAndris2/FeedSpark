@@ -1,7 +1,7 @@
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeTopic } from "../Interfaces/IYoutubeSettings";
-import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
+import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData, IYoutubeVideoStatistics } from "../Interfaces/IYoutubeSummary";
 import { DateHelper } from "../Misc/DateHelper";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
@@ -16,14 +16,17 @@ import { PropertyService, PropertyType } from "./PropertyService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
+import { YoutubeService } from "./YoutubeService";
 
 export class YoutubeRssProcessor implements ILogable {
+    private readonly _youtubeService: YoutubeService;
     private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
     private readonly _videoDescriptionMaxLength: number;
 
-    constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
+    constructor(config: YoutubeSettings, aiService: YoutubeAiService, youtubeService: YoutubeService) {
+        this._youtubeService = youtubeService;
         this._aiService = aiService;
         this._rssFeedParser = new RssFeedParserFactory().create(config.rssVersion, [
             RssNamespaceProvider.find("Media-RSS"),
@@ -51,7 +54,9 @@ export class YoutubeRssProcessor implements ILogable {
             .filter(summary => summary.channels.length >= 1);
         const channelCount = summaries.reduce((sum, summary) => sum + summary.countChannels(), 0);
         const videoCount = summaries.reduce((sum, summary) => sum + summary.countVideos(), 0);
+        
         summaries.forEach(s => s.logRandomChannelImageDataUrl());
+        this._setRatingOnSummaryVideos(summaries);
 
         this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total channels: ${channelCount} | Total videos across all channels: ${videoCount}`);
         return summaries;
@@ -195,12 +200,21 @@ export class YoutubeRssProcessor implements ILogable {
 
     private _setRatingOnSummaryVideos(summaries: YoutubeSummary[]) : void {
         const videoIds = summaries
-            .map(s => s.channels)
-            .map(channels => channels.map(c => c.videos.map(v => v.id)))
-            .reduce((acc, nested) => acc.concat.apply(acc, nested), [])
+            .map(summary => summary.collectVideoIds())
             .reduce((acc, ids) => acc.concat(ids), []);
-        
-        
+        const videoStats = this._youtubeService.getVideoStats(videoIds);
+
+        for (const summary of summaries) {
+            for (const channel of summary.channels) {
+                for (const video of channel.videos) {
+                    const videoStat = videoStats.find(stat => stat.videoId === video.id);
+
+                    if (!videoStat) continue;
+
+                    video.rating = this._computeStarRating(videoStat);
+                }
+            }
+        }
     }
 
     private _shortenText(text: string, maxLength: number) : string {
@@ -227,10 +241,10 @@ export class YoutubeRssProcessor implements ILogable {
         return value.toString();
     }
 
-    private _computeStarRating(likeCount: number, viewCount: number, commentCount: number): number {
-        const ratio = (likeCount / viewCount) * 100;
-        const likeBoost = likeCount / 50000;
-        const commentBoost = commentCount / 2000;
+    private _computeStarRating(videoStatistics: IYoutubeVideoStatistics): number {
+        const ratio = (videoStatistics.likeCount / videoStatistics.viewCount) * 100;
+        const likeBoost = videoStatistics.likeCount / 50000;
+        const commentBoost = videoStatistics.commentCount / 2000;
         const score = ratio + likeBoost + commentBoost;
         return Math.min(5, Math.max(0, score));
     }
