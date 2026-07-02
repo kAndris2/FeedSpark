@@ -29,12 +29,6 @@ export class YoutubeSummary implements IYoutubeSummary, ILogable {
         this.log(LogSeverity.Debug, `Avatar url: ${randomChannel.avatarUrl} | Banner url: ${randomChannel.bannerUrl} | Thumbnail url: ${randomVideo.thumbnailUrl}`);
     }
 
-    public collectVideoIds() : string[] {
-        return this.channels
-            .map(channel => channel.videos.map(video => video.id))
-            .reduce((acc, ids) => acc.concat(ids), []);
-    }
-
     public countChannels() : number {
         return this.channels.length;
     }

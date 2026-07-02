@@ -197,21 +197,21 @@ export class YoutubeRssProcessor implements ILogable {
     }
 
     private _setRatingOnSummaryVideos(summaries: YoutubeSummary[]) : void {
-        const videoIds = summaries
-            .map(summary => summary.collectVideoIds())
-            .reduce((acc, ids) => acc.concat(ids), []);
+        const allVideos = summaries
+            .map(s => s.channels.map(c => c.videos))
+            .reduce((acc, nested) => acc.concat.apply(acc, nested), [])
+            .reduce((acc, vids) => acc.concat(vids), []);
+
+        const videoIds = allVideos.map(v => v.id);
         const videoStats = new YoutubeService().getVideoStats(videoIds);
+        const statsMap = new Map(videoStats.map(stat => [stat.videoId, stat]));
 
-        for (const summary of summaries) {
-            for (const channel of summary.channels) {
-                for (const video of channel.videos) {
-                    const videoStat = videoStats.find(stat => stat.videoId === video.id);
+        for (const video of allVideos) {
+            const stat = statsMap.get(video.id);
+            
+            if (!stat) continue;
 
-                    if (!videoStat) continue;
-
-                    video.rating = this._computeStarRating(videoStat);
-                }
-            }
+            video.rating = this._computeStarRating(stat);
         }
     }
 
