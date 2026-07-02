@@ -1,4 +1,5 @@
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
+import { IYoutubeChannel } from "../Interfaces/IYoutubeChannel";
 import { IYoutubeVideoStatistics } from "../Interfaces/IYoutubeSummary";
 import { GeneralService } from "../Misc/GeneralService";
 import { HelperConstants } from "../Misc/HelperConstants";
@@ -10,7 +11,7 @@ export class YoutubeService implements ILogable {
     }
     
     public getVideoStats(videoIds: string[]) : IYoutubeVideoStatistics[] {
-        const chunks = GeneralService.chunkArray(videoIds, HelperConstants.youtubeVideoIdBatchLimit);
+        const chunks = GeneralService.chunkArray(videoIds, HelperConstants.youtubeVideoStatListBatchLimit);
         let videoStatistics: IYoutubeVideoStatistics[] = [];
 
         for (const videoIdchunk of chunks) {
@@ -40,5 +41,29 @@ export class YoutubeService implements ILogable {
         }
 
         return videoStatistics;
+    }
+
+    public getSubscribedChannels(): IYoutubeChannel[] {
+        let channels: IYoutubeChannel[] = [];
+        let pageToken: string | null = null;
+
+        do {
+            const response: any = YouTube?.Subscriptions.list("snippet", {
+                mine: true,
+                maxResults: HelperConstants.youtubeSubscriptionListBatchLimit,
+                pageToken: pageToken
+            });
+
+            const mapped = response.items.map((item: any) => ({
+                id: item.snippet.resourceId.channelId,
+                name: item.snippet.title
+            })) as IYoutubeChannel[];
+
+            channels = [...channels, ...mapped];
+
+            pageToken = response.nextPageToken ?? null;
+        } while (pageToken);
+
+        return channels;
     }
 }
