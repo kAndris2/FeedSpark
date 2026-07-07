@@ -1,24 +1,28 @@
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { IRssFeedParser } from "../Interfaces/IRssFeedParser";
 import { IYoutubeTopic } from "../Interfaces/IYoutubeSettings";
-import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeSummary, IYoutubeVideoData } from "../Interfaces/IYoutubeSummary";
+import { IYoutubeChannelData, IYoutubeChannelImageData, IYoutubeVideoData, IYoutubeVideoStatistics } from "../Interfaces/IYoutubeSummary";
 import { DateHelper } from "../Misc/DateHelper";
 import { HelperConstants } from "../Misc/HelperConstants";
 import { RssNamespaceProvider } from "../Misc/RssNamespaceProvider";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeChannelDatabase";
 import { XmlElement } from "../Models/XmlElement";
 import { YoutubeSettings } from "../Models/YoutubeSettings";
 import { YoutubeSummary } from "../Models/YoutubeSummary";
 import { ConverterService } from "./ConverterService";
 import { GenericLogger } from "./GenericLogger";
+import { PropertyService, PropertyType } from "./PropertyService";
 import { RssFeedParserFactory } from "./RssFeedParserFactory";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
+import { YoutubeService } from "./YoutubeService";
 
 export class YoutubeRssProcessor implements ILogable {
     private readonly _aiService: YoutubeAiService;
     private readonly _rssFeedParser: IRssFeedParser;
     private readonly _config: YoutubeSettings;
+    private readonly _videoDescriptionMaxLength: number;
 
     constructor(config: YoutubeSettings, aiService: YoutubeAiService) {
         this._aiService = aiService;
@@ -27,13 +31,14 @@ export class YoutubeRssProcessor implements ILogable {
             RssNamespaceProvider.find("YouTube")
         ]);
         this._config = config;
+        this._videoDescriptionMaxLength = PropertyService.getProperty(ScriptPropertiesKeyVault.youtubeVideoDescriptionMaxLength, 'number', PropertyType.Script);
     }
 
     log(severity: LogSeverity, message: string): void {
         GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
-    public getSummaries() : IYoutubeSummary[] {
+    public getSummaries() : YoutubeSummary[] {
         const dateFormat = "yyyy.MM.dd";
         const periodEnd = new Date();
         const periodStart = new Date(periodEnd.getTime() - this._config.daysToCheck * 24 * 60 * 60 * 1000);
@@ -47,7 +52,9 @@ export class YoutubeRssProcessor implements ILogable {
             .filter(summary => summary.channels.length >= 1);
         const channelCount = summaries.reduce((sum, summary) => sum + summary.countChannels(), 0);
         const videoCount = summaries.reduce((sum, summary) => sum + summary.countVideos(), 0);
+        
         summaries.forEach(s => s.logRandomChannelImageDataUrl());
+        this._setRatingOnSummaryVideos(summaries);
 
         this.log(LogSeverity.Info, `Summary processing finished! - Total summaries: ${summaries.length} | Total channels: ${channelCount} | Total videos across all channels: ${videoCount}`);
         return summaries;
@@ -150,17 +157,20 @@ export class YoutubeRssProcessor implements ILogable {
 
     private _createVideoData(entryEl: XmlElement) : IYoutubeVideoData {
         const mediaEl = entryEl.getChild("media:group");
+        const description = mediaEl.getTextFromChildEl("media:description") ?? "";
+        const views = parseInt(
+            mediaEl
+                .getChild("media:community")
+                .getValueFromChildEl("media:statistics", "views") ?? "0"
+        );
 
         return {
+            id: entryEl.getChild("yt:videoId").getText(),
             title: this._rssFeedParser.getTitleFromElement(entryEl),
-            description: mediaEl.getTextFromChildEl("media:description") ?? "",
+            description: this._shortenText(description, this._videoDescriptionMaxLength),
             url: this._rssFeedParser.getLinkFromElement(entryEl),
             thumbnailUrl: mediaEl.getValueFromChildEl("media:thumbnail", "url") ?? "",
-            views: parseInt(
-                mediaEl
-                    .getChild("media:community")
-                    .getValueFromChildEl("media:statistics", "views") ?? "0"
-            ),
+            views: this._formatViewsNumber(views),
             publishedDateStr: ConverterService.getFormattedDateStr(
                 this._rssFeedParser.getDateFromElement(entryEl)
             )
@@ -184,5 +194,58 @@ export class YoutubeRssProcessor implements ILogable {
             avatarUrl: avatarMatch ? ConverterService.fixUrl(avatarMatch[1]) : "",
             bannerUrl: bannerMatch ? ConverterService.fixUrl(bannerMatch[1]) : ""
         } satisfies IYoutubeChannelImageData;
+    }
+
+    private _setRatingOnSummaryVideos(summaries: YoutubeSummary[]) : void {
+        const allVideos = summaries
+            .map(s => s.channels.map(c => c.videos))
+            .reduce((acc, nested) => acc.concat.apply(acc, nested), [])
+            .reduce((acc, vids) => acc.concat(vids), []);
+
+        const videoIds = allVideos.map(v => v.id);
+        const videoStats = new YoutubeService().getVideoStats(videoIds);
+        const statsMap = new Map(videoStats.map(stat => [stat.videoId, stat]));
+
+        for (const video of allVideos) {
+            const stat = statsMap.get(video.id);
+            
+            if (!stat) continue;
+
+            video.rating = this._computeStarRating(stat);
+        }
+    }
+
+    private _shortenText(text: string, maxLength: number) : string {
+        if (text.length <= maxLength) 
+            return text;
+
+        return text.substring(0, maxLength - 3) + "...";
+    }
+
+    private _formatViewsNumber(value: number): string {
+        const units: [number, string][] = [
+            [1_000_000_000, "B"],
+            [1_000_000, "M"],
+            [1000, "K"]
+        ];
+
+        for (const [limit, suffix] of units) {
+            if (value >= limit) {
+                const n = value / limit;
+                return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1)) + suffix;
+            }
+        }
+
+        return value.toString();
+    }
+
+    private _computeStarRating(videoStatistics: IYoutubeVideoStatistics): number {
+        const ratio = (videoStatistics.likeCount / videoStatistics.viewCount) * 100;
+        const likeBoost = videoStatistics.likeCount / 50000;
+        const commentBoost = videoStatistics.commentCount / 2000;
+        const score = ratio + likeBoost + commentBoost;
+
+        const clamped = Math.min(5, Math.max(0, score));
+        return Math.round(clamped * 10) / 10;
     }
 }

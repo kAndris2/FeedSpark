@@ -2,5 +2,6 @@ export class ScriptPropertiesKeyVault {
     public static readonly youtubeFeedUrlTemplate: string = "YoutubeFeedUrlTemplate";
     public static readonly youtubeChannelUrlTemplate: string = "YoutubeChannelUrlTemplate";
     public static readonly youtubeChannelClassifierPrompt: string = "YoutubeChannelClassifierPrompt";
+    public static readonly youtubeVideoDescriptionMaxLength: string = "YoutubeVideoDescriptionMaxLength";
     public static readonly aiStudioApiUrl: string = "AiStudioApiUrl";
 }

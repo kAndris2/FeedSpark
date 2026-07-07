@@ -6,6 +6,7 @@ import { ClassifiedYoutubeChannelDatabase } from "../Models/ClassifiedYoutubeCha
 import { GenericLogger } from "./GenericLogger";
 import { YoutubeAiService } from "./YoutubeAiService";
 import { YoutubeDriveService } from "./YoutubeDriveService";
+import { YoutubeService } from "./YoutubeService";
 
 export class YoutubeChannelClassifier implements ILogable {
     private readonly _settings: IYoutubeTopicSettings;
@@ -25,7 +26,7 @@ export class YoutubeChannelClassifier implements ILogable {
     public classifyChannels() : void {
         this.log(LogSeverity.Info, `Channel classification started.`);
 
-        const subscribedChannels = this._getSubscribedChannels();
+        const subscribedChannels = new YoutubeService().getSubscribedChannels();
         this.log(LogSeverity.Info, `Found ${subscribedChannels.length} subscribed channels.`);
 
         const classifiedChannelDatabase = this._driveService.getClassifiedChannelDataBase();
@@ -98,29 +99,5 @@ export class YoutubeChannelClassifier implements ILogable {
         }
 
         return remappedResult;
-    }
-
-    private _getSubscribedChannels(): IYoutubeChannel[] {
-        let channels: IYoutubeChannel[] = [];
-        let pageToken: string | null = null;
-
-        do {
-            const response: any = YouTube?.Subscriptions.list("snippet", {
-                mine: true,
-                maxResults: 50,
-                pageToken: pageToken
-            });
-
-            const mapped = response.items.map((item: any) => ({
-                id: item.snippet.resourceId.channelId,
-                name: item.snippet.title
-            })) as IYoutubeChannel[];
-
-            channels = [...channels, ...mapped];
-
-            pageToken = response.nextPageToken ?? null;
-        } while (pageToken);
-
-        return channels;
     }
 }

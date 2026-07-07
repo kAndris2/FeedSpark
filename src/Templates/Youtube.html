@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-</head>
-
-<body style="margin:0; padding:0; background-color:#0f172a; font-family:Arial, sans-serif;">
-    <table width="100%" cellspacing="0" cellpadding="0" style="background-color:#0f172a;">
+<meta charset="UTF-8">
+<body style="margin:0;padding:0;background:#0f172a;font-family:Arial,sans-serif;">
+    <table width="100%" cellspacing="0" cellpadding="0" style="background:#0f172a;">
         <tr>
             <td align="center" style="padding:24px 8px;">
-                <table width="600" cellspacing="0" cellpadding="0"style="width:100%; max-width:600px; background-color:#020617; border-radius:16px; border:1px solid #1e293b;">
+                <table cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background:#020617;border-radius:16px;border:1px solid #1e293b;">
                     <tr>
-                        <td style="padding:20px 24px; border-bottom:1px solid #1e293b;">
-                            <table width="100%">
+                        <td style="padding:20px 24px;border-bottom:1px solid #1e293b;">
+                            <table cellspacing="0" style="width:100%;">
                                 <tr>
-                                    <td align="left">
-                                        <div style="color:#e5e7eb; font-size:20px; font-weight:bold;">
-                                            YouTube summary (<?= summary.topic ?>)
-                                        </div>
+                                    <td style="color:#e5e7eb;font-size:20px;font-weight:bold;">
+                                        YouTube summary (<?= summary.topic ?>)
+                                    </td>
 
-                                        <div style="color:#9ca3af; font-size:12px; margin-top:4px;">
-                                            Period: <?= summary.periodStartStr ?> - <?= summary.periodEndStr ?>
-                                        </div>
+                                    <td align="right" valign="top" style="color:#9ca3af;font-size:12px;white-space:nowrap;">
+                                        <div>Period: <?= summary.periodStartStr ?> - <?= summary.periodEndStr ?></div>
+                                        <div style="margin-top:4px;">Total videos: <?= summary.totalVideosCount ?></div>
                                     </td>
                                 </tr>
                             </table>
@@ -29,86 +25,79 @@
 
                     <? for (let channel of summary.channels) { ?>
                         <tr>
-                            <td style="padding:0 24px;">
-                                <div style="padding:20px 0; border-bottom:1px solid #1e293b;">
-                                    <div style="margin-bottom:16px;">
-                                        <table width="100%">
-                                            <tr>
-                                                <td width="48" valign="top" style="padding-right:12px;">
-                                                    <a href="<?= channel.url ?>" style="text-decoration:none;">
-                                                        <img src="<?= channel.avatarUrl ?>" width="48" height="48" style="border-radius:999px; border:1px solid #1f2937; display:block;">
-                                                    </a>
-                                                </td>
+                            <td style="padding:20px 24px;border-bottom:1px solid #1e293b;">
 
-                                                <td valign="top">
-                                                    <div style="font-size:15px; font-weight:bold; color:#e5e7eb;">
-                                                        <a href="<?= channel.url ?>" style="color:#e5e7eb; text-decoration:none;">
-                                                            <?= channel.name ?>
-                                                        </a>
-                                                    </div>
+                                <a href="<?= channel.url ?>" style="display:block;text-decoration:none;color:inherit;">
+                                    <table width="100%" cellspacing="0">
+                                        <tr>
+                                            <td width="48" valign="top" style="padding-right:12px;">
+                                                <img src="<?= channel.avatarUrl ?>" width="48" height="48" style="border-radius:999px;border:1px solid #1f2937;display:block;">
+                                            </td>
 
-                                                    <div style="margin-top:8px;">
-                                                        <a href="<?= channel.url ?>" style="text-decoration:none;">
-                                                            <img src="<?= channel.bannerUrl ?>" width="100%" style="border-radius:8px; border:1px solid #1f2937; display:block;">
-                                                        </a>
-                                                    </div>
+                                            <td valign="top">
+                                                <div style="font-size:15px;font-weight:bold;color:#e5e7eb;">
+                                                    <?= channel.name ?>
+                                                </div>
 
-                                                    <div style="margin-top:8px; font-size:12px; color:#9ca3af;">
-                                                        New videos: <?= channel.videos.length ?>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                                <div style="margin-top:8px;">
+                                                    <img src="<?= channel.bannerUrl ?>" width="100%" style="border-radius:8px;border:1px solid #1f2937;display:block;">
+                                                </div>
+
+                                                <div style="margin-top:8px;font-size:12px;color:#9ca3af;">
+                                                    New videos: <?= channel.videos.length ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </a>
+
+                                <? for (let video of channel.videos) { ?>
+                                    <div style="margin-top:16px;">
+                                        <a href="<?= video.url ?>" style="display:block;text-decoration:none;color:inherit;">
+                                            <table width="100%" cellspacing="0" cellpadding="0" style="border-radius:12px;border:1px solid #1f2937;background:#020617;">
+                                                <tr>
+                                                    <td width="180" valign="top" style="padding:10px;">
+                                                        <img src="<?= video.thumbnailUrl ?>" width="160" style="border-radius:8px;border:1px solid #111827;display:block;">
+                                                    </td>
+
+                                                    <td valign="top" style="padding:10px 14px 10px 0;">
+                                                        <div style="font-size:14px;font-weight:bold;color:#e5e7eb;margin-bottom:6px;">
+                                                            <?= video.title ?>
+                                                        </div>
+
+                                                        <table width="100%" cellpadding="0" cellspacing="0" style="font-size:11px;color:#9ca3af;margin-bottom:6px;background:#0f172a;border-radius:12px;">
+                                                            <tr>
+                                                                <td style="width:33%;text-align:center;padding:4px 0;">
+                                                                    📅 <?= video.publishedDateStr ?>
+                                                                </td>
+
+                                                                <td style="width:33%;text-align:center;padding:4px 0;border-left:1px solid #000;border-right:1px solid #000;">
+                                                                    👁️ <?= video.views ?>
+                                                                </td>
+
+                                                                <td style="width:33%;text-align:center;padding:4px 0;">
+                                                                    ⭐ <?= video.rating ?>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+
+                                                        <div style="font-size:12px;color:#9ca3af;line-height:1.5;max-height:4.2em;overflow:hidden;">
+                                                            <?= video.description ?>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </a>
                                     </div>
+                                <? } ?>
 
-                                    <div>
-                                        <? for (let video of channel.videos) { ?>
-                                            <div style="margin-bottom:16px;">
-                                                <table width="100%" cellspacing="0" cellpadding="0" style="border-radius:12px; border:1px solid #1f2937; background-color:#020617;">
-                                                    <tr>
-                                                        <td width="180" valign="top" style="padding:10px;">
-                                                            <a href="<?= video.url ?>" style="text-decoration:none;">
-                                                                <img src="<?= video.thumbnailUrl ?>" width="160" style="border-radius:8px; border:1px solid #111827; display:block;">
-                                                            </a>
-                                                        </td>
-
-                                                        <td valign="top" style="padding:10px 14px 10px 0;">
-                                                            <div style="font-size:14px; font-weight:bold; color:#e5e7eb; margin-bottom:4px;">
-                                                                <a href="<?= video.url ?>" style="color:#e5e7eb; text-decoration:none;">
-                                                                    <?= video.title ?>
-                                                                </a>
-                                                            </div>
-
-                                                            <div style="font-size:11px; color:#9ca3af; margin-bottom:6px;">
-                                                                Uploaded: <?= video.publishedDateStr ?>
-                                                                <span style="display:inline-block; margin-left:4px; padding:2px 6px; border-radius:999px; background-color:#0f172a; color:#6ee7b7;">
-                                                                    <?= video.views ?> views
-                                                                </span>
-                                                            </div>
-
-                                                            <div style="font-size:12px; color:#9ca3af; line-height:1.5; max-height:3.6em; overflow:hidden;">
-                                                                <?= video.description ?>
-                                                            </div>
-
-                                                            <div style="margin-top:10px;">
-                                                                <a href="<?= video.url ?>" style="display:inline-block; padding:6px 10px; font-size:11px; font-weight:bold; color:#0f172a; background:linear-gradient(135deg,#22c55e,#0ea5e9); border-radius:999px; text-decoration:none;">
-                                                                    Watch now
-                                                                </a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </div>
-                                        <? } ?>
-                                    </div>
-                                </div>
                             </td>
                         </tr>
                     <? } ?>
 
                     <tr>
-                        <td style="padding:16px 24px 20px 24px; border-top:1px solid #1e293b;">
-                            <div style="font-size:11px; color:#6b7280; text-align:center; line-height:1.5;">
+                        <td style="padding:16px 24px 20px;border-top:1px solid #1e293b;">
+                            <div style="font-size:11px;color:#6b7280;text-align:center;line-height:1.5;">
                                 This summary was generated by FeedSpark based on the channels you follow.<br>
                                 If you no longer wish to receive these emails, please adjust the script settings.
                             </div>
@@ -116,7 +105,6 @@
                     </tr>
 
                 </table>
-
             </td>
         </tr>
     </table>
