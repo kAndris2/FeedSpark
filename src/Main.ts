@@ -64,3 +64,19 @@ function youtubeTopicSelectorEntry() {
         loggerDriveService.finalize();
     }
 }
+
+function catalogReaderEntry() {
+    GenericLogger.addLog("Main", "Script started => catalogReaderEntry", LogSeverity.Info);
+
+    try {
+        AppInitializer.initialize();
+
+        
+    }
+    catch (e) {
+        GenericLogger.addLog("Main", "Script stopped because of an exception!", LogSeverity.Error);
+    }
+    finally {
+        loggerDriveService.finalize();
+    }
+}
