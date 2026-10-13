@@ -1,5 +1,7 @@
 import { IAppSettings } from "../Interfaces/IAppSettings";
+import { CatalogItem } from "../Interfaces/ICatalogItem";
 import { LogSeverity } from "../Interfaces/ILogable";
+import { ScriptPropertiesKeyVault } from "../Misc/ScriptPropertiesKeyVault";
 import { AppSettings } from "../Models/AppSettings";
 import { DriveServiceBase } from "./DriveServiceBase";
 import { GenericLogger } from "./GenericLogger";
@@ -7,6 +9,15 @@ import { GenericLogger } from "./GenericLogger";
 export class DriveService extends DriveServiceBase {
     override log(severity: LogSeverity, message: string): void {
         GenericLogger.addLog(this.constructor.name, message, severity);
+    }
+
+    public getCatalogItems() : CatalogItem[] {
+        const catalogItems = this.get<CatalogItem[]>(ScriptPropertiesKeyVault.catalogStorageFilename);
+
+        if (!catalogItems)
+            throw new Error("No catalog items found!");
+
+        return catalogItems;
     }
 
     public getConfiguration() : IAppSettings {

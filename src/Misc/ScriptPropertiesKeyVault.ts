@@ -4,4 +4,5 @@ export class ScriptPropertiesKeyVault {
     public static readonly youtubeChannelClassifierPrompt: string = "YoutubeChannelClassifierPrompt";
     public static readonly youtubeVideoDescriptionMaxLength: string = "YoutubeVideoDescriptionMaxLength";
     public static readonly aiStudioApiUrl: string = "AiStudioApiUrl";
+    public static readonly catalogStorageFilename: string = "CatalogStorageFilename";
 }
