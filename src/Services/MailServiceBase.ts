@@ -8,7 +8,8 @@ export abstract class MailServiceBase<T> implements ILogable {
 
     public abstract sendSummary(summary: T) : void;
 
-    protected send(htmlTemplate: GoogleAppsScript.HTML.HtmlTemplate, subject: string) : void {
+    protected send(summary: T, templateName: string, subject: string) : void {
+        const htmlTemplate = this._getHtmlTemplate(templateName, summary);
         const htmlOutput = htmlTemplate.evaluate().getContent();
 
         MailApp.sendEmail({
@@ -20,7 +21,10 @@ export abstract class MailServiceBase<T> implements ILogable {
         this.log(LogSeverity.Info, `Summary email sent. - Subject: ${subject}`);
     }
 
-    protected getHtmlTemplate(templateName: string) : GoogleAppsScript.HTML.HtmlTemplate {
-        return HtmlService.createTemplateFromFile(`Templates/${templateName}`);
+    private _getHtmlTemplate(templateName: string, summary: T) : GoogleAppsScript.HTML.HtmlTemplate {
+        const template = HtmlService.createTemplateFromFile(`Templates/${templateName}`);
+        template.summary = summary;
+
+        return template;
     }
 }
