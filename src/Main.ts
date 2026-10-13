@@ -1,6 +1,7 @@
 import { IAppSettings } from "./Interfaces/IAppSettings";
 import { LogSeverity } from "./Interfaces/ILogable";
 import { YoutubeSettings } from "./Models/YoutubeSettings";
+import { CatalogMailService } from "./Services/CatalogMailService";
 import { CatalogService } from "./Services/CatalogService";
 import { DriveService } from "./Services/DriveService";
 import { GenericLogger } from "./Services/GenericLogger";
@@ -73,8 +74,10 @@ function catalogReaderEntry() {
     try {
         AppInitializer.initialize();
 
-        const catalogService = new CatalogService(driveService);
-        const summary = catalogService.getSummaries();
+        const summary = new CatalogService(driveService)
+            .getSummaries();
+        new CatalogMailService()
+            .sendSummary(summary);
     }
     catch (e) {
         GenericLogger.addLog("Main", "Script stopped because of an exception!", LogSeverity.Error);
