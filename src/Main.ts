@@ -1,6 +1,7 @@
 import { IAppSettings } from "./Interfaces/IAppSettings";
 import { LogSeverity } from "./Interfaces/ILogable";
 import { YoutubeSettings } from "./Models/YoutubeSettings";
+import { CatalogService } from "./Services/CatalogService";
 import { DriveService } from "./Services/DriveService";
 import { GenericLogger } from "./Services/GenericLogger";
 import { LoggerDriveService } from "./Services/LoggerDriveService";
@@ -9,12 +10,13 @@ import { YoutubeChannelClassifier } from "./Services/YoutubeChannelClassifier";
 import { YoutubeMailService } from "./Services/YoutubeMailService";
 import { YoutubeRssProcessor } from "./Services/YoutubeRssProcessor";
 
+const driveService = new DriveService();
 let configBase: IAppSettings;
 let loggerDriveService: LoggerDriveService;
 
 class AppInitializer {
     static initialize() {
-        configBase = new DriveService().getConfiguration();
+        configBase = driveService.getConfiguration();
         loggerDriveService = new LoggerDriveService(configBase.loggerSettings);
     }
 }
@@ -71,7 +73,8 @@ function catalogReaderEntry() {
     try {
         AppInitializer.initialize();
 
-        
+        const catalogService = new CatalogService(driveService);
+        const summary = catalogService.getSummaries();
     }
     catch (e) {
         GenericLogger.addLog("Main", "Script stopped because of an exception!", LogSeverity.Error);
