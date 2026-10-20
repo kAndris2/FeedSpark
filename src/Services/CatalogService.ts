@@ -21,10 +21,7 @@ export class CatalogService implements ILogable {
 
         return {
             movies: this._catalogFilter(catalogItems, CatalogCategory.Movie),
-            series: this._catalogFilter(catalogItems, CatalogCategory.Series),
-            music: this._catalogFilter(catalogItems, CatalogCategory.Music),
-            languages: this._catalogFilter(catalogItems, CatalogCategory.Language),
-            catalogs: this._catalogFilter(catalogItems, CatalogCategory.Catalog),
+            series: this._catalogFilter(catalogItems, CatalogCategory.Series)
         };
     }
 

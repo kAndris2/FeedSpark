@@ -3,9 +3,6 @@ import { CatalogCategory } from "../Enums/CatalogCategory";
 export interface ICatalogItemMap {
     movie: IMovieCatalogItem;
     series: ISeriesCatalogItem;
-    music: IMusicCatalogItem;
-    language: ILanguageCatalogItem;
-    catalog: ICatalogItem;
 }
 
 export type CatalogItem = {
@@ -19,16 +16,13 @@ export interface ICatalogItem {
     publishedDate: Date;
 }
 
-export interface ILanguageCatalogItem extends ICatalogItem {
-    language: string;
-}
-
-export interface IVideoCatalogItem extends ILanguageCatalogItem {
+export interface IVideoCatalogItem extends ICatalogItem {
     quality: string;
     posterUrl: string;
     rate: number;
     genres: string[];
     titleInfo: ITitleInfo;
+    language: string;
 }
 
 export interface IMovieCatalogItem extends IVideoCatalogItem {
@@ -37,10 +31,6 @@ export interface IMovieCatalogItem extends IVideoCatalogItem {
 
 export interface ISeriesCatalogItem extends IVideoCatalogItem {
     season: string;
-}
-
-export interface IMusicCatalogItem extends ILanguageCatalogItem {
-    releaseYear: number;
 }
 
 export interface ITitleInfo {
