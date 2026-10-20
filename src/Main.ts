@@ -78,6 +78,8 @@ function catalogReaderEntry() {
             .getSummaries();
         new CatalogMailService()
             .sendSummary(summary);
+
+        GenericLogger.addLog("Main", "Script finished successfully!", LogSeverity.Info);
     }
     catch (e) {
         GenericLogger.addLog("Main", "Script stopped because of an exception!", LogSeverity.Error);
