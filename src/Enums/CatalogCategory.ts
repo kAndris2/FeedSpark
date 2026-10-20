@@ -1,4 +1,4 @@
 export enum CatalogCategory {
-    Movie = 0,
-    Series = 1
+    Movie,
+    Series
 }

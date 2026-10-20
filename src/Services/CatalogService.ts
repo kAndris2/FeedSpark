@@ -1,6 +1,5 @@
 import { CatalogCategory } from "../Enums/CatalogCategory";
 import { CatalogItem } from "../Interfaces/ICatalogItem";
-import { ICatalogSummary } from "../Interfaces/ICatalogSummary";
 import { ILogable, LogSeverity } from "../Interfaces/ILogable";
 import { DriveService } from "./DriveService";
 import { GenericLogger } from "./GenericLogger";
@@ -16,20 +15,36 @@ export class CatalogService implements ILogable {
         GenericLogger.addLog(this.constructor.name, message, severity);
     }
 
-    public getSummaries() : ICatalogSummary {
+    public getSummaries() : Map<string, CatalogItem[]> {
         const catalogItems = this._driveService.getCatalogItems();
+        const summaryMap = new Map<string, CatalogItem[]>();
 
-        return {
-            movies: this._catalogFilter(catalogItems, CatalogCategory.Movie),
-            series: this._catalogFilter(catalogItems, CatalogCategory.Series)
-        };
+        Object.keys(CatalogCategory)
+            .filter(key => isNaN(Number(key)))
+            .forEach(key => {
+                const category = CatalogCategory[key as keyof typeof CatalogCategory];
+
+                const filteredItems = catalogItems.filter(c => c.category === category);
+                this.log(LogSeverity.Info, `${CatalogCategory[category]} found: ${filteredItems.length}`);
+
+                const categoryName = this._getCatalogItemCategoryName(category);
+                summaryMap.set(categoryName, filteredItems);
+            });
+        
+        return summaryMap;
     }
 
-    private _catalogFilter<T>(catalogItems: CatalogItem[], category: CatalogCategory) : T[] {
-        const result = catalogItems.filter(c => c.category === category) as T[];
-
-        this.log(LogSeverity.Info, `${CatalogCategory[category]} found: ${result.length}`);
-
-        return result;
+    private _getCatalogItemCategoryName(category: CatalogCategory) : string {
+        try {
+            switch (category) {
+                case CatalogCategory.Movie: return "Movies";
+                case CatalogCategory.Series: return "Series";
+                default: throw new Error(`Unknown catalog category! - ${category}`);
+            }
+        }
+        catch (e: any) {
+            this.log(LogSeverity.Error, e.message);
+            throw e;
+        }
     }
 }
